@@ -1,0 +1,108 @@
+{% extends "admin/base.html" %}
+{% block title %}Media Library — {{ site_name }}{% endblock %}
+{% block breadcrumb %}Media{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/media.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block topbar_actions %}
+  <label for="fileUpload" class="btn tb-btn-primary" style="cursor: pointer;">
+    + Upload
+  </label>
+{% endblock %}
+
+{% block content %}
+
+<form id="uploadForm" method="POST" action="{{ url_for('admin.media_upload') }}" enctype="multipart/form-data" style="display: none;">
+  <input type="file" id="fileUpload" name="file" multiple accept="image/*,video/*" onchange="this.form.submit()">
+</form>
+
+<div class="media-upload-zone" id="dropZone">
+  <p>Drop files here or click <strong>Upload</strong> above.</p>
+  <span style="font-size: var(--text-xs); color: var(--text-dim);">Images: JPG, PNG, GIF, WebP · Videos: MP4, WebM</span>
+</div>
+
+<div class="media-toolbar">
+  <div class="media-filter">
+    <a href="{{ url_for('admin.media_library') }}" class="{{ 'active' if not current_type }}">All</a>
+    <a href="{{ url_for('admin.media_library', type='image') }}" class="{{ 'active' if current_type == 'image' }}">Images</a>
+    <a href="{{ url_for('admin.media_library', type='video') }}" class="{{ 'active' if current_type == 'video' }}">Videos</a>
+  </div>
+  <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim);">
+    {{ media_items.total }} files
+  </span>
+</div>
+
+{% if media_items.items %}
+  <div class="media-grid">
+    {% for media in media_items.items %}
+      <div class="media-card">
+        <div class="media-thumb">
+          {% if media.is_image() %}
+            <img src="{{ media.url }}" alt="{{ media.alt_text or media.filename }}" loading="lazy">
+          {% else %}
+            <span class="media-thumb-video">▶</span>
+          {% endif %}
+        </div>
+        <div class="media-info">
+          <div class="media-name" title="{{ media.filename }}">{{ media.filename }}</div>
+          <div class="media-meta">
+            <span>{{ (media.size / 1024)|round|int }} KB</span>
+            <span>{{ media.created_at|timeago }}</span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+  {% if media_items.pages > 1 %}
+    <div class="pagination">
+      {% for page in media_items.iter_pages() %}
+        {% if page %}
+          <a href="{{ url_for('admin.media_library', page=page, type=current_type) }}" 
+             class="{{ 'current' if page == media_items.page }}">
+            {{ page }}
+          </a>
+        {% else %}
+          <span>…</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="dash-empty">
+    <p class="dash-empty-text">No media yet.</p>
+    <p class="dash-empty-hint">Upload images or videos to get started.</p>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+var dropZone = document.getElementById('dropZone');
+var fileInput = document.getElementById('fileUpload');
+
+dropZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', function() {
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  fileInput.files = e.dataTransfer.files;
+  fileInput.form.submit();
+});
+
+dropZone.addEventListener('click', function() {
+  fileInput.click();
+});
+</script>
+{% endblock %}

@@ -44,8 +44,8 @@
           <span>Posts</span>
         </a>
 
-        <a href="#"
-           class="sb-item {% if request.endpoint and request.endpoint.startswith('admin.media') %}active{% endif %}">
+        <a href="{{ url_for('admin.media_library') }}"
+          class="sb-item {% if request.endpoint == 'admin.media_library' %}active{% endif %}">
           <i class="ti ti-photo" aria-hidden="true"></i>
           <span>Media</span>
         </a>

@@ -5,8 +5,10 @@ from app.admin import bp
 from app.models import Collection, Entry, User
 from app.models.user import UserRole
 from app.models.api_key import ApiKey
+from app.models.media import Media
 from app.utils import generate_invite_token, send_invite_email
 from app.services.s3 import S3Service
+from app.services.media_service import upload_media, delete_media
 from werkzeug.utils import secure_filename
 from app import db
 from datetime import datetime, timedelta, timezone
@@ -285,28 +287,28 @@ def settings():
             
             try:
                 file = request.files['avatar_file']
-                result = S3Service.upload_file(
-                    file,
+                
+                media = upload_media(
+                    file=file,
+                    user_id=current_user.id,
                     folder='avatars',
-                    allowed_extensions={'jpg', 'jpeg', 'png', 'gif', 'webp'}
+                    alt_text=f"{current_user.display_name or current_user.username}'s avatar"
                 )
                 
                 if current_user.avatar_url:
-                    old_key = extract_s3_key(current_user.avatar_url)
-                    if old_key and 'avatars/' in old_key:
-                        try:
-                            S3Service.delete_file(old_key)
-                        except:
-                            pass
+                    old_media = Media.query.filter_by(url=current_user.avatar_url).first()
+                    if old_media:
+                        delete_media(old_media.id)
                 
-                current_user.avatar_url = result['url']
+                current_user.avatar_url = media.url
                 db.session.commit()
                 flash('Avatar uploaded successfully.', 'success')
                 
             except ValueError as e:
                 flash(str(e), 'error')
             except Exception as e:
-                flash(f'Upload failed. Please try again.', 'error')
+                current_app.logger.error(f'Avatar upload failed: {str(e)}')
+                flash('Upload failed. Please try again.', 'error')
             
         return redirect(url_for('admin.settings'))
     
@@ -322,3 +324,68 @@ def extract_s3_key(url):
         parts = url.split(f'{bucket}/')
         return parts[-1] if len(parts) > 1 else None
     return None
+
+
+@bp.route('/media')
+@login_required
+def media_library():
+    media_type = request.args.get('type', '')
+    page = request.args.get('page', 1, type=int)
+    
+    query = Media.query.order_by(Media.created_at.desc())
+    
+    if media_type:
+        query = query.filter_by(media_type=media_type)
+    
+    media_items = query.paginate(page=page, per_page=24)
+    
+    return render_template('admin/media.html', 
+                         media_items=media_items,
+                         current_type=media_type)
+
+
+@bp.route('/media/upload', methods=['POST'])
+@login_required
+def media_upload():
+    if 'file' not in request.files or not request.files['file'].filename:
+        flash('Please select a file.', 'error')
+        return redirect(url_for('admin.media_library'))
+    
+    try:
+        file = request.files['file']
+        folder = request.form.get('folder', 'general')
+        alt_text = request.form.get('alt_text', '').strip() or None
+        caption = request.form.get('caption', '').strip() or None
+        
+        media = upload_media(
+            file=file,
+            user_id=current_user.id,
+            folder=folder,
+            alt_text=alt_text,
+            caption=caption
+        )
+        
+        flash(f'File "{media.filename}" uploaded.', 'success')
+    except ValueError as e:
+        flash(str(e), 'error')
+    except Exception as e:
+        flash('Upload failed.', 'error')
+    
+    return redirect(url_for('admin.media_library'))
+
+
+@bp.route('/media/<media_id>/delete', methods=['POST'])
+@login_required
+def media_delete(media_id):
+    if delete_media(media_id):
+        flash('Media deleted.', 'success')
+    else:
+        flash('Media not found.', 'error')
+    return redirect(url_for('admin.media_library'))
+
+
+@bp.route('/media/<media_id>')
+@login_required
+def media_detail(media_id):
+    media = Media.query.get_or_404(media_id)
+    return render_template('admin/media_detail.html', media=media)
