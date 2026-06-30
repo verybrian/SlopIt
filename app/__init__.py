@@ -41,6 +41,14 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
     
+    @app.context_processor
+    def inject_site_config():
+        return {
+            'site_name': app.config['SITE_NAME'],
+            'site_description': app.config['SITE_DESCRIPTION'],
+            'site_url': app.config['SITE_URL'],
+        }
+    
     return app
 
 @login_manager.user_loader
