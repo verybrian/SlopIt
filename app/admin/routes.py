@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.admin import bp
 from app.models import Collection, Entry, User
 from app.models.user import UserRole
+from app.models.api_key import ApiKey
 from app.utils import generate_invite_token, send_invite_email
 from app import db
 from datetime import datetime, timedelta, timezone
@@ -151,3 +152,71 @@ def user_delete(user_id):
     
     flash(f'User "{user.username}" deleted.', 'success')
     return redirect(url_for('admin.user_list'))
+
+
+@bp.route('/api-keys')
+@login_required
+def api_keys():
+    if current_user.role.value != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    keys = ApiKey.query.order_by(ApiKey.created_at.desc()).all()
+    return render_template('admin/api_keys.html', keys=keys)
+
+@bp.route('/api-keys/generate', methods=['POST'])
+@login_required
+def api_key_generate():
+    if current_user.role.value != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Please provide a name for the key.', 'error')
+        return redirect(url_for('admin.api_keys'))
+    
+    public_key, secret_key = ApiKey.generate_keys()
+    
+    api_key = ApiKey(
+        name=name,
+        public_key=public_key,
+        secret_hash=ApiKey.hash_secret(secret_key),
+        created_by=current_user.id
+    )
+    
+    db.session.add(api_key)
+    db.session.commit()
+    
+    flash(f'API key created! Secret key (shown once): {secret_key}', 'success')
+    return redirect(url_for('admin.api_keys'))
+
+@bp.route('/api-keys/<key_id>/toggle', methods=['POST'])
+@login_required
+def api_key_toggle(key_id):
+    if current_user.role.value != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    api_key = ApiKey.query.get_or_404(key_id)
+    api_key.is_active = not api_key.is_active
+    db.session.commit()
+    
+    status = 'enabled' if api_key.is_active else 'disabled'
+    flash(f'API key "{api_key.name}" {status}.', 'info')
+    return redirect(url_for('admin.api_keys'))
+
+@bp.route('/api-keys/<key_id>/delete', methods=['POST'])
+@login_required
+def api_key_delete(key_id):
+    if current_user.role.value != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    api_key = ApiKey.query.get_or_404(key_id)
+    name = api_key.name
+    db.session.delete(api_key)
+    db.session.commit()
+    
+    flash(f'API key "{name}" deleted.', 'success')
+    return redirect(url_for('admin.api_keys'))

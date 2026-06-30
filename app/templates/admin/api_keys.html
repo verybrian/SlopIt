@@ -1,0 +1,124 @@
+{% extends "admin/base.html" %}
+{% block title %}API Keys — {{ site_name }}{% endblock %}
+{% block breadcrumb %}API Keys{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+{% endblock %}
+
+{% block content %}
+
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-label">API Keys</span>
+      <span class="dash-section-link">{{ keys|length }} total</span>
+    </div>
+
+    <div style="background: #111; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: var(--space-5); margin-bottom: var(--space-4);">
+      <p style="font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: var(--space-3);">
+        Generate new key
+      </p>
+      <form method="POST" action="{{ url_for('admin.api_key_generate') }}" style="display: flex; gap: var(--space-3); align-items: flex-end;">
+        <div class="field" style="margin-bottom: 0; flex: 1;">
+          <label for="name">Key name</label>
+          <input type="text" id="name" name="name" placeholder="Production frontend" required>
+        </div>
+        <button type="submit" class="btn tb-btn-primary">Generate →</button>
+      </form>
+      <p style="font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-3);">
+        The secret key will be shown <strong style="color: var(--warn);">only once</strong>. Copy it immediately.
+      </p>
+    </div>
+
+    {% if keys %}
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Public Key</th>
+              <th>Status</th>
+              <th>Last Used</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for key in keys %}
+              <tr class="dash-table-row">
+                <td class="dash-table-title">{{ key.name }}</td>
+                <td class="dash-table-mono" style="font-size: 11px;">
+                  <code style="color: var(--text-dim);">{{ key.public_key }}</code>
+                </td>
+                <td>
+                  {% if key.is_active %}
+                    <span class="dash-badge dash-badge--published">Active</span>
+                  {% else %}
+                    <span class="dash-badge dash-badge--draft">Disabled</span>
+                  {% endif %}
+                </td>
+                <td class="dash-table-mono">
+                  {{ key.last_used_at|timeago if key.last_used_at else 'Never' }}
+                </td>
+                <td class="dash-table-mono">{{ key.created_at|timeago }}</td>
+                <td class="dash-table-action" style="display: flex; gap: var(--space-3); justify-content: flex-end;">
+                  <form method="POST" action="{{ url_for('admin.api_key_toggle', key_id=key.id) }}" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim);">
+                      {{ 'Disable' if key.is_active else 'Enable' }}
+                    </button>
+                  </form>
+                  <a href="#" onclick="confirmDelete('{{ key.id }}', '{{ key.name }}', '{{ url_for('admin.api_key_delete', key_id=key.id) }}'); return false;">Delete →</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="dash-empty">
+        <p class="dash-empty-text">No API keys yet.</p>
+        <p class="dash-empty-hint">Generate one to access the API from your frontend.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <h3 class="modal-title">Delete API key</h3>
+      <p class="modal-text">Are you sure you want to delete the key "<strong id="deleteKeyName"></strong>"? This will immediately revoke access.</p>
+      <div class="modal-actions">
+        <button onclick="closeModal()" class="btn btn-ghost">Cancel</button>
+        <form id="deleteForm" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger">Delete key</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(keyId, keyName, deleteUrl) {
+  document.getElementById('deleteKeyName').textContent = keyName;
+  document.getElementById('deleteForm').action = deleteUrl;
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var overlay = document.querySelector('.modal-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', closeModal);
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+});
+</script>
+{% endblock %}

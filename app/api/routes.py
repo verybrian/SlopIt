@@ -1,8 +1,11 @@
 from flask import jsonify, request
 from app.api import bp
 from app.models import Collection, Entry
+from app.api.decorators import require_api_key
+
 
 @bp.route('/content/<collection_name>')
+@require_api_key
 def get_content(collection_name):
     collection = Collection.query.filter_by(name=collection_name).first_or_404()
     
@@ -18,6 +21,7 @@ def get_content(collection_name):
     return jsonify([entry.to_dict() for entry in entries])
 
 @bp.route('/content/<collection_name>/<slug>')
+@require_api_key
 def get_entry(collection_name, slug):
     collection = Collection.query.filter_by(name=collection_name).first_or_404()
     
@@ -30,6 +34,7 @@ def get_entry(collection_name, slug):
     return jsonify(entry.to_dict())
 
 @bp.route('/collections')
+@require_api_key
 def list_collections():
     collections = Collection.query.all()
     return jsonify([c.to_dict() for c in collections])

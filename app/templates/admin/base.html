@@ -59,10 +59,10 @@
                 <span>Users</span>
             </a>
 
-            <a href="#"
-                class="sb-item">
-                <i class="ti ti-key" aria-hidden="true"></i>
-                <span>API Keys</span>
+            <a href="{{ url_for('admin.api_keys') }}"
+              class="sb-item {% if request.endpoint == 'admin.api_keys' %}active{% endif %}">
+              <i class="ti ti-key" aria-hidden="true"></i>
+              <span>API Keys</span>
             </a>
         {% endif %}
 
