@@ -21,6 +21,10 @@
     </div>
 
     <button type="submit" class="btn btn-primary">Log in</button>
+
+    <div class="form-footer">
+      <a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a>
+    </div>
   </form>
 </div>
 {% endblock %}
