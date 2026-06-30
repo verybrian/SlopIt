@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}SlopIt — CMS{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="home">
+
+  <p class="home__eyebrow">Content management system</p>
+
+  <h1 class="home__title">
+    Your content.<br>
+    <span>Your rules.</span>
+  </h1>
+
+  <p class="home__desc">
+    A lightweight, self-hosted CMS built for developers and their clients.
+    No lock-in. No bloat.
+  </p>
+
+  <div class="home__actions">
+    {% if current_user.is_authenticated %}
+      <a href="#" class="btn btn-primary">Go to dashboard →</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Log in →</a>
+    {% endif %}
+    <a href="#" class="btn btn-ghost">Read the docs</a>
+  </div>
+
+</section>
+
+<footer class="home-footer">
+  <span>Powered by <a class="home-footer__link" href="https://github.com/verybrian/slopit" target="_blank" rel="noopener">SlopIt</a></span>
+  <span class="home-footer__sep">·</span>
+  <span>Built by <a class="home-footer__link" href="https://wajuaji.digital" target="_blank" rel="noopener">Wajuaji Digital</a></span>
+</footer>
+{% endblock %}

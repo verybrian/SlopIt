@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SlopIt{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts.css') }}">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="{{ url_for('main.index') }}" class="nav__brand">
+      <span class="nav__brand-dot"></span>
+      SlopIt
+    </a>
+
+    <ul class="nav__links">
+      {% if current_user.is_authenticated %}
+        <li>
+          <span class="nav__user">
+            <span>{{ current_user.username }}</span>
+            <span class="nav__role">{{ current_user.role.value }}</span>
+          </span>
+        </li>
+        <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
+      {% else %}
+        <li><a href="#">Docs</a></li>
+        <li><a href="{{ url_for('auth.login') }}" class="nav__cta">Log in →</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alerts">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

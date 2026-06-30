@@ -1,0 +1,22 @@
+/* alerts.css — flash messages */
+
+.alerts {
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-4) auto 0;
+  padding: 0 var(--space-4);
+}
+
+.alert {
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  border-left: 3px solid transparent;
+  background: var(--bg-surface);
+}
+
+.alert-success { border-color: var(--success); color: var(--success); }
+.alert-danger   { border-color: var(--danger);  color: var(--danger);  }
+.alert-warning  { border-color: var(--warn);    color: var(--warn);    }
+.alert-info     { border-color: var(--info);    color: var(--info);    }

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SlopIt{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-shell.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+  {% block styles %}{% endblock %}
+</head>
+<body class="admin-body">
+
+  <div class="shell">
+
+    <aside class="sidebar">
+      <a href="{{ url_for('main.index') }}" class="sb-brand">
+        <span class="sb-dot"></span>
+        <span class="sb-name">SlopIt</span>
+      </a>
+
+            <nav class="sb-nav">
+        <div class="sb-section">Content</div>
+
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="sb-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+          <i class="ti ti-layout-dashboard" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="#"
+           class="sb-item {% if request.endpoint and request.endpoint.startswith('admin.pages') %}active{% endif %}">
+          <i class="ti ti-file-text" aria-hidden="true"></i>
+          <span>Pages</span>
+        </a>
+
+        <a href="#"
+           class="sb-item {% if request.endpoint and request.endpoint.startswith('admin.posts') %}active{% endif %}">
+          <i class="ti ti-pencil" aria-hidden="true"></i>
+          <span>Posts</span>
+        </a>
+
+        <a href="#"
+           class="sb-item {% if request.endpoint and request.endpoint.startswith('admin.media') %}active{% endif %}">
+          <i class="ti ti-photo" aria-hidden="true"></i>
+          <span>Media</span>
+        </a>
+
+        <div class="sb-section">System</div>
+
+        {% if current_user.role.value == 'admin' %}
+            <a href="{{ url_for('admin.user_list') }}"
+                class="sb-item {% if request.endpoint == 'admin.user_list' %}active{% endif %}">
+                <i class="ti ti-users" aria-hidden="true"></i>
+                <span>Users</span>
+            </a>
+
+            <a href="#"
+                class="sb-item">
+                <i class="ti ti-key" aria-hidden="true"></i>
+                <span>API Keys</span>
+            </a>
+        {% endif %}
+
+        <a href="#"
+           class="sb-item">
+          <i class="ti ti-settings" aria-hidden="true"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sb-bottom">
+        <div class="sb-user">
+          <div class="sb-avatar">
+            {{ current_user.username[:2].upper() }}
+          </div>
+          <div class="sb-user-info">
+            <span class="sb-uname">{{ current_user.username }}</span>
+            <span class="sb-role">{{ current_user.role.value }}</span>
+          </div>
+          <a href="{{ url_for('auth.logout') }}" class="sb-logout" title="Log out">
+            <i class="ti ti-logout" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <span class="topbar-breadcrumb">
+          SlopIt /&nbsp;<span class="topbar-breadcrumb-current">{% block breadcrumb %}Dashboard{% endblock %}</span>
+        </span>
+        <div class="topbar-actions">
+          {% block topbar_actions %}{% endblock %}
+        </div>
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="admin-alerts">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <main class="admin-content">
+        {% block content %}{% endblock %}
+      </main>
+
+    </div>
+  </div>
+
+</body>
+</html>

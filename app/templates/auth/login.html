@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Log in — SlopIt{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+  <h1>Log in</h1>
+  <p class="form-sub">Welcome back.</p>
+
+  <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Log in</button>
+  </form>
+</div>
+{% endblock %}

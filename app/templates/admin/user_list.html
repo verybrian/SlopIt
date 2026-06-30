@@ -1,0 +1,106 @@
+{% extends "admin/base.html" %}
+{% block title %}Users — SlopIt{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
+{% endblock %}
+{% block breadcrumb %}Users{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.user_invite') }}" class="btn tb-btn-primary">+ Invite user</a>
+{% endblock %}
+
+{% block content %}
+
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-label">All users</span>
+      <span class="dash-section-link">{{ users|length }} total</span>
+    </div>
+
+    {% if users %}
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr class="dash-table-row">
+                <td>
+                  <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    <div class="sb-avatar" style="width: 28px; height: 28px; font-size: 10px;">
+                      {{ user.username[:2].upper() }}
+                    </div>
+                    <span class="dash-table-title">{{ user.username }}</span>
+                  </div>
+                </td>
+                <td class="dash-table-mono">{{ user.email }}</td>
+                <td>
+                  <span class="dash-badge dash-badge--{{ 'published' if user.role.value == 'admin' else 'draft' }}">
+                    {{ user.role.value }}
+                  </span>
+                </td>
+                <td>
+                  {% if user.is_active %}
+                    <span class="dash-badge dash-badge--published">Active</span>
+                  {% else %}
+                    <span class="dash-badge dash-badge--draft">Pending</span>
+                  {% endif %}
+                </td>
+                <td class="dash-table-mono">{{ user.created_at|timeago }}</td>
+                <td class="dash-table-action">
+                  {% if user.id != current_user.id %}
+                    <a href="#" onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')">Delete →</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="dash-empty">
+        <p class="dash-empty-text">No users found.</p>
+        <p class="dash-empty-hint">Invite users to help manage content.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <h3 class="modal-title">Delete user</h3>
+      <p class="modal-text">Are you sure you want to delete <strong id="deleteUserName"></strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button onclick="closeModal()" class="btn btn-ghost">Cancel</button>
+        <form id="deleteForm" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger">Delete user</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(userId, username) {
+  document.getElementById('deleteUserName').textContent = username;
+  document.getElementById('deleteForm').action = '/admin/users/' + userId + '/delete';
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+document.querySelector('.modal-overlay')?.addEventListener('click', closeModal);
+</script>
+{% endblock %}

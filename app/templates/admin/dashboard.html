@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard — SlopIt{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="#" class="btn tb-btn-ghost">
+    <i class="ti ti-bell" aria-hidden="true"></i>
+  </a>
+  <a href="#" class="btn tb-btn-primary">+ New post</a>
+{% endblock %}
+
+{% block content %}
+
+  <!-- Stats row -->
+  <div class="dash-stats">
+    <div class="stat-card">
+      <div class="stat-label">Pages</div>
+      <div class="stat-value">{{ stats.pages_total }}</div>
+      <div class="stat-sub">
+        <span class="stat-sub--accent">{{ stats.pages_published }} published</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Posts</div>
+      <div class="stat-value">{{ stats.posts_total }}</div>
+      <div class="stat-sub">
+        <span class="stat-sub--accent">{{ stats.posts_published }} published</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Media</div>
+      <div class="stat-value">{{ stats.media_total }}</div>
+      <div class="stat-sub">files uploaded</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Users</div>
+      <div class="stat-value">{{ stats.users_total }}</div>
+      <div class="stat-sub">admin + staff</div>
+    </div>
+  </div>
+
+  <!-- Recent posts table -->
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-label">Recent posts</span>
+      <a href="#" class="dash-section-link">View all →</a>
+    </div>
+
+    {% if recent_posts %}
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Author</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for post in recent_posts %}
+              <tr class="dash-table-row">
+                <td class="dash-table-title">{{ post.title }}</td>
+                <td>
+                  <span class="dash-badge dash-badge--{{ post.status }}">
+                    {{ post.status }}
+                  </span>
+                </td>
+                <td class="dash-table-mono">{{ post.author.username }}</td>
+                <td class="dash-table-mono">{{ post.updated_at | timeago }}</td>
+                <td class="dash-table-action">
+                  <a href="#">Edit →</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="dash-empty">
+        <p class="dash-empty-text">No posts yet.</p>
+        <p class="dash-empty-hint">Create your first post to get started.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Bottom two-col -->
+  <div class="dash-two-col">
+
+    <!-- Activity feed -->
+    <div class="dash-panel">
+      <div class="dash-panel-title">Recent activity</div>
+      {% if activity %}
+        {% for item in activity %}
+          <div class="activity-item">
+            <div class="activity-dot activity-dot--{{ item.type }}"></div>
+            <div>
+              <div class="activity-text">
+                <strong>{{ item.actor }}</strong> {{ item.action }}
+              </div>
+              <div class="activity-time">{{ item.timestamp | timeago }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="dash-empty-hint">No activity yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Collections -->
+    <div class="dash-panel">
+      <div class="dash-panel-title">Collections</div>
+      <div class="dash-col-item">
+        <span class="dash-col-name">Pages</span>
+        <div class="dash-col-right">
+          <span class="dash-col-count">{{ stats.pages_total }} entries</span>
+          <span class="dash-col-arrow">→</span>
+        </div>
+      </div>
+      <div class="dash-col-item">
+        <span class="dash-col-name">Posts</span>
+        <div class="dash-col-right">
+          <span class="dash-col-count">{{ stats.posts_total }} entries</span>
+          <span class="dash-col-arrow">→</span>
+        </div>
+      </div>
+      <div class="dash-col-item">
+        <span class="dash-col-name">Media</span>
+        <div class="dash-col-right">
+          <span class="dash-col-count">{{ stats.media_total }} files</span>
+          <span class="dash-col-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% endblock %}

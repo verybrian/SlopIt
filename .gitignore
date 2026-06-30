@@ -1,3 +1,6 @@
 .env
 venv/
 __pycache__/
+migrations/
+
+seed_content.py

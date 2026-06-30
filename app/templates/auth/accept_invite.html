@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accept Invitation — SlopIt</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+  <style>
+    body {
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: var(--space-4);
+    }
+  </style>
+</head>
+<body>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="alerts" style="position: fixed; top: var(--space-4); right: var(--space-4);">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="form-wrap" style="max-width: 440px;">
+  <div style="text-align: center; margin-bottom: var(--space-6);">
+    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-bottom: var(--space-3);"></span>
+    <h1>Set up your account</h1>
+    <p class="form-sub">You've been invited to join as an <strong>editor</strong>.</p>
+  </div>
+
+  <form method="POST" novalidate>
+    <div class="field">
+      <label for="username">Choose a username</label>
+      <input type="text" id="username" name="username" placeholder="yourname" required autofocus>
+    </div>
+
+    <div class="field">
+      <label for="password">Create password</label>
+      <input type="password" id="password" name="password" required minlength="8">
+    </div>
+
+    <div class="field">
+      <label for="confirm_password">Confirm password</label>
+      <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%;">Create account →</button>
+  </form>
+</div>
+
+</body>
+</html>

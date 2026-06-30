@@ -1,0 +1,82 @@
+/* tokens.css — design tokens, reset, base typography */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Colour */
+  --bg:          #0d0d0d;
+  --bg-surface:  #141414;
+  --bg-raised:   #1c1c1c;
+  --border:      #2a2a2a;
+  --border-soft: #222222;
+
+  --text:        #e8e6e1;
+  --text-muted:  #999;
+  --text-dim:    #666;
+
+  --accent:      #c8f542;   /* sharp lime */
+  --accent-dim:  #9eba30;
+  --danger:      #f54242;
+  --warn:        #f5a742;
+  --info:        #42a6f5;
+  --success:     #42f578;
+
+  /* Type */
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --text-xs:   0.70rem;
+  --text-sm:   0.82rem;
+  --text-base: 0.95rem;
+  --text-lg:   1.1rem;
+  --text-xl:   1.4rem;
+  --text-2xl:  1.9rem;
+  --text-3xl:  2.8rem;
+
+  /* Space */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+
+  /* Misc */
+  --radius:    4px;
+  --radius-lg: 8px;
+  --transition: 140ms ease;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 300;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+a:hover { opacity: 0.75; }
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}

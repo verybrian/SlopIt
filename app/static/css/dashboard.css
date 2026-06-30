@@ -1,0 +1,324 @@
+/* dashboard.css — dashboard page content styles */
+
+/* ── Stats row ────────────────────────────────────── */
+
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.stat-card {
+  background: #111;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: var(--space-2);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.stat-sub {
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  margin-top: var(--space-1);
+}
+
+.stat-sub--accent {
+  color: var(--accent);
+}
+
+/* ── Section header ───────────────────────────────── */
+
+.dash-section {
+  margin-bottom: var(--space-6);
+}
+
+.dash-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.dash-section-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.dash-section-link {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.dash-section-link:hover {
+  color: var(--text);
+  opacity: 1;
+}
+
+/* ── Table ────────────────────────────────────────── */
+
+.dash-table-wrap {
+  background: #111;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.dash-table thead {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.dash-table th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 500;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+}
+
+.dash-table-row {
+  border-bottom: 1px solid #141414;
+  transition: background var(--transition);
+}
+
+.dash-table-row:last-child {
+  border-bottom: none;
+}
+
+.dash-table-row:hover td {
+  background: #141414;
+}
+
+.dash-table td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+.dash-table-title {
+  color: var(--text) !important;
+}
+
+.dash-table-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.dash-table-action {
+  text-align: right;
+}
+
+.dash-table-action a {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.dash-table-action a:hover {
+  color: var(--text);
+  opacity: 1;
+}
+
+/* ── Status badges ────────────────────────────────── */
+
+.dash-badge {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+}
+
+.dash-badge--published { color: var(--success); }
+.dash-badge--draft     { color: var(--text-dim); }
+.dash-badge--archived  { color: var(--warn); }
+
+/* ── Two column bottom row ────────────────────────── */
+
+.dash-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* ── Panel (activity + collections) ──────────────── */
+
+.dash-panel {
+  background: #111;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.dash-panel-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* ── Activity feed ────────────────────────────────── */
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid #141414;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.activity-dot--publish { background: var(--success); }
+.activity-dot--create  { background: var(--accent); }
+.activity-dot--upload  { background: var(--info); }
+.activity-dot--edit    { background: var(--text-dim); }
+
+.activity-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.activity-text strong {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.activity-time {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* ── Collections list ─────────────────────────────── */
+
+.dash-col-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid #141414;
+}
+
+.dash-col-item:last-child {
+  border-bottom: none;
+}
+
+.dash-col-name {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.dash-col-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dash-col-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.dash-col-arrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  transition: color var(--transition);
+}
+
+.dash-col-item:hover .dash-col-arrow {
+  color: var(--accent);
+}
+
+/* ── Empty state ──────────────────────────────────── */
+
+.dash-empty {
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.dash-empty-text {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.dash-empty-hint {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .dash-stats {
+    grid-template-columns: 1fr;
+  }
+}

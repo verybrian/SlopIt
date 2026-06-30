@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% block title %}Invite User — SlopIt{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin.user_list') }}" style="color: var(--text-dim); text-decoration: none;">Users</a> / Invite{% endblock %}
+
+{% block content %}
+
+<div class="form-wrap" style="max-width: 480px;">
+  <h1>Invite new user</h1>
+  <p class="form-sub">Send an invitation email. They'll set their username and password after accepting.</p>
+
+  <form method="POST" novalidate>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input type="email" id="email" name="email" placeholder="editor@example.com" required autofocus>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Send invitation →</button>
+  </form>
+</div>
+
+{% endblock %}
