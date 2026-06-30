@@ -1,6 +1,9 @@
 import uuid
 from app import db
 from datetime import datetime
+from app.models.entry_value import EntryValue
+from app.models.field import Field
+
 
 class Entry(db.Model):
     __tablename__ = 'entries'
@@ -33,7 +36,17 @@ class Entry(db.Model):
                 'updated_at': self.updated_at.isoformat()
             }
             for value in self.values.all():
-                data[value.field.name] = value.value
+                field = value.field
+                
+                if field.field_type.value == 'repeater':
+                    # Get repeater items in order
+                    items = RepeaterItem.query.filter_by(
+                        entry_value_id=value.id
+                    ).order_by(RepeaterItem.order).all()
+                    data[field.name] = [item.to_dict() for item in items]
+                else:
+                    data[field.name] = value.value
+            
             return data
         else:
             return {

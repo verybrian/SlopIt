@@ -1,30 +1,19 @@
 import uuid
 from app import db
-import enum
+from app.models.field import FieldType
 
-class FieldType(enum.Enum):
-    TEXT = "text"
-    TEXTAREA = "textarea"
-    RICH_TEXT = "rich_text"
-    IMAGE = "image"
-    DATE = "date"
-    BOOLEAN = "boolean"
-    SELECT = "select"
-    NUMBER = "number"
-    REPEATER = "repeater"
-
-class Field(db.Model):
-    __tablename__ = 'fields'
+class RepeaterSubField(db.Model):
+    __tablename__ = 'repeater_sub_fields'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    collection_id = db.Column(db.String(36), db.ForeignKey('collections.id'), nullable=False)
+    block_id = db.Column(db.String(36), db.ForeignKey('repeater_blocks.id'), nullable=False)
     name = db.Column(db.String(64), nullable=False)
     label = db.Column(db.String(128), nullable=False)
     field_type = db.Column(db.Enum(FieldType), nullable=False)
     required = db.Column(db.Boolean, default=False)
     options = db.Column(db.JSON, nullable=True)
-    order = db.Column(db.Integer, default=0)
     default_value = db.Column(db.Text, nullable=True)
+    order = db.Column(db.Integer, default=0)
     
     def to_dict(self):
         return {
@@ -34,6 +23,6 @@ class Field(db.Model):
             'field_type': self.field_type.value,
             'required': self.required,
             'options': self.options,
-            'order': self.order,
-            'default_value': self.default_value
+            'default_value': self.default_value,
+            'order': self.order
         }

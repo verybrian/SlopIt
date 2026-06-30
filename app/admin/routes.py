@@ -389,3 +389,31 @@ def media_delete(media_id):
 def media_detail(media_id):
     media = Media.query.get_or_404(media_id)
     return render_template('admin/media_detail.html', media=media)
+
+
+@bp.route('/collections')
+@login_required
+def collections():
+    collections = Collection.query.order_by(Collection.label).all()
+    
+    collection_data = []
+    for col in collections:
+        entry_count = Entry.query.filter_by(collection_id=col.id).count()
+        published_count = Entry.query.filter_by(
+            collection_id=col.id, status='published'
+        ).count()
+        collection_data.append({
+            'collection': col,
+            'entry_count': entry_count,
+            'published_count': published_count
+        })
+    
+    return render_template('admin/collections.html', collections=collection_data)
+
+
+@bp.route('/collections/<collection_id>')
+@login_required
+def collection_edit(collection_id):
+    collection = Collection.query.get_or_404(collection_id)
+    entries = Entry.query.filter_by(collection_id=collection.id).order_by(Entry.updated_at.desc()).all()
+    return render_template('admin/collection_edit.html', collection=collection, entries=entries)

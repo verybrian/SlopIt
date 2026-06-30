@@ -1,0 +1,227 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ collection.label }} — {{ site_name }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin.collections') }}" style="color: var(--text-dim); text-decoration: none;">Collections</a> / {{ collection.label }}{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
+  <style>
+    .edit-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+    
+    .edit-card {
+      background: #111;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    
+    .edit-card-title {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    
+    .field-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    
+    .field-list-item:last-child {
+      border-bottom: none;
+    }
+    
+    .field-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    
+    .field-type-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius);
+      background: #1a1a1a;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+    
+    .field-type-badge.repeater {
+      color: var(--accent);
+      background: rgba(200, 245, 66, 0.08);
+    }
+    
+    .field-name {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    
+    .field-label {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+    
+    .block-list {
+      margin-top: var(--space-3);
+      padding-left: var(--space-6);
+    }
+    
+    .block-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+    }
+    
+    .block-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      flex-shrink: 0;
+    }
+    
+    .block-name {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    
+    .block-subfields {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-left: var(--space-2);
+    }
+    
+    .entry-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid #1a1a1a;
+      text-decoration: none;
+      transition: background var(--transition);
+    }
+    
+    .entry-row:hover {
+      background: #141414;
+      margin: 0 calc(-1 * var(--space-5));
+      padding-left: var(--space-5);
+      padding-right: var(--space-5);
+    }
+    
+    .entry-row:last-child {
+      border-bottom: none;
+    }
+    
+    .entry-title {
+      font-size: var(--text-sm);
+      color: var(--text);
+    }
+    
+    .entry-meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+    }
+    
+    @media (max-width: 768px) {
+      .edit-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block topbar_actions %}
+  {% if collection.is_singleton and entries %}
+    <a href="#" class="btn tb-btn-primary">Edit {{ collection.label }}</a>
+  {% else %}
+    <a href="#" class="btn tb-btn-primary">+ New entry</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-layout">
+  
+  <!-- Schema -->
+  <div class="edit-card">
+    <h2 class="edit-card-title">
+      Schema — {{ collection.fields.count() }} fields
+      {% if collection.is_singleton %}
+        <span style="color: var(--accent); margin-left: var(--space-2);">singleton</span>
+      {% endif %}
+    </h2>
+    
+    {% if collection.fields.count() > 0 %}
+      {% for field in collection.fields.order_by('order') %}
+        <div class="field-list-item">
+          <div class="field-info">
+            <span class="field-type-badge {{ 'repeater' if field.field_type.value == 'repeater' }}">
+              {{ field.field_type.value }}
+            </span>
+            <div>
+              <div class="field-name">{{ field.label }}</div>
+              <div class="field-label">{{ field.name }}{% if field.required %} · required{% endif %}</div>
+            </div>
+          </div>
+        </div>
+        
+        {% if field.field_type.value == 'repeater' and field.repeater_blocks.count() > 0 %}
+          <div class="block-list">
+            {% for block in field.repeater_blocks.order_by('order') %}
+              <div class="block-item">
+                <span class="block-dot"></span>
+                <span class="block-name">{{ block.label }}</span>
+                <span class="block-subfields">({{ block.sub_fields.count() }} fields)</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <p style="font-size: var(--text-sm); color: var(--text-dim);">No fields defined yet.</p>
+    {% endif %}
+  </div>
+  
+  <!-- Entries -->
+  <div class="edit-card">
+    <h2 class="edit-card-title">
+      Entries — {{ entries|length }} total
+    </h2>
+    
+    {% if entries %}
+      {% for entry in entries %}
+        <a href="#" class="entry-row">
+          <div>
+            <div class="entry-title">
+              {{ entry.get_value('title') or 'Untitled' }}
+            </div>
+            <div class="entry-meta">
+              {{ entry.status }} · {{ entry.updated_at|timeago }}
+            </div>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim);">→</span>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p style="font-size: var(--text-sm); color: var(--text-dim);">No entries yet.</p>
+    {% endif %}
+  </div>
+  
+</div>
+
+{% endblock %}

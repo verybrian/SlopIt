@@ -1,0 +1,136 @@
+{% extends "admin/base.html" %}
+{% block title %}Collections — {{ site_name }}{% endblock %}
+{% block breadcrumb %}Collections{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
+  <style>
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--space-3);
+    }
+    
+    .collection-card {
+      background: #111;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      transition: border-color var(--transition);
+      text-decoration: none;
+      display: block;
+    }
+    
+    .collection-card:hover {
+      border-color: var(--border);
+    }
+    
+    .collection-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    
+    .collection-card-name {
+      font-size: var(--text-base);
+      color: var(--text);
+      font-weight: 400;
+    }
+    
+    .collection-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px var(--space-2);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    
+    .collection-badge.singleton {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .collection-card-meta {
+      display: flex;
+      gap: var(--space-4);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+    }
+    
+    .collection-card-meta span {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    
+    .collection-card-meta .count {
+      color: var(--text-muted);
+    }
+    
+    .collection-card-arrow {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      margin-top: var(--space-3);
+      transition: color var(--transition);
+    }
+    
+    .collection-card:hover .collection-card-arrow {
+      color: var(--accent);
+    }
+  </style>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="#" class="btn tb-btn-primary">+ New collection</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="dash-section">
+  <div class="dash-section-head">
+    <span class="dash-section-label">Content Collections</span>
+    <span class="dash-section-link">{{ collections|length }} total</span>
+  </div>
+
+  {% if collections %}
+    <div class="collection-grid">
+      {% for item in collections %}
+        <a href="{{ url_for('admin.collection_edit', collection_id=item.collection.id) }}" class="collection-card">
+          <div class="collection-card-header">
+            <span class="collection-card-name">{{ item.collection.label }}</span>
+            {% if item.collection.is_singleton %}
+              <span class="collection-badge singleton">Singleton</span>
+            {% else %}
+              <span class="collection-badge">Multiple</span>
+            {% endif %}
+          </div>
+          <div class="collection-card-meta">
+            <span>
+              <span class="count">{{ item.entry_count }}</span> entries
+            </span>
+            <span>
+              <span class="count">{{ item.published_count }}</span> published
+            </span>
+            <span>
+              {{ item.collection.fields.count() }} fields
+            </span>
+          </div>
+          <div class="collection-card-arrow">Manage collection →</div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="dash-empty">
+      <p class="dash-empty-text">No collections yet.</p>
+      <p class="dash-empty-hint">Create your first content collection to get started.</p>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
