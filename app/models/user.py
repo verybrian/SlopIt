@@ -16,6 +16,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    display_name = db.Column(db.String(128), nullable=True)
+    avatar_url = db.Column(db.String(512), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
     role = db.Column(db.Enum(UserRole), default=UserRole.EDITOR, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     is_deleted = db.Column(db.Boolean, default=False)
@@ -25,6 +28,7 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(128), unique=True, nullable=True)
     reset_expires_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

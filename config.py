@@ -21,3 +21,11 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', SITE_EMAIL)
+
+    S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'slopit-media')
+    S3_REGION = os.environ.get('S3_REGION', 'auto')
+    S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
+    S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
+    S3_PUBLIC_URL = os.environ.get('S3_PUBLIC_URL', '')
+    MAX_UPLOAD_SIZE = int(os.environ.get('MAX_UPLOAD_SIZE', 10 * 1024 * 1024))  # 10MB

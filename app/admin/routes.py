@@ -1,3 +1,4 @@
+import os
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.admin import bp
@@ -5,6 +6,8 @@ from app.models import Collection, Entry, User
 from app.models.user import UserRole
 from app.models.api_key import ApiKey
 from app.utils import generate_invite_token, send_invite_email
+from app.services.s3 import S3Service
+from werkzeug.utils import secure_filename
 from app import db
 from datetime import datetime, timedelta, timezone
 
@@ -220,3 +223,102 @@ def api_key_delete(key_id):
     
     flash(f'API key "{name}" deleted.', 'success')
     return redirect(url_for('admin.api_keys'))
+
+@bp.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'profile':
+            display_name = request.form.get('display_name', '').strip()
+            email = request.form.get('email', '').strip().lower()
+            bio = request.form.get('bio', '').strip()
+            
+            errors = []
+            
+            if email and email != current_user.email:
+                existing = User.query.filter_by(email=email).first()
+                if existing:
+                    errors.append('Email already in use.')
+            
+            if errors:
+                for error in errors:
+                    flash(error, 'error')
+                return redirect(url_for('admin.settings'))
+            
+            current_user.display_name = display_name or None
+            current_user.bio = bio or None
+            if email:
+                current_user.email = email
+            
+            db.session.commit()
+            flash('Profile updated.', 'success')
+            
+        elif action == 'password':
+            current_password = request.form.get('current_password', '')
+            new_password = request.form.get('new_password', '')
+            confirm_password = request.form.get('confirm_password', '')
+            
+            errors = []
+            
+            if not current_user.check_password(current_password):
+                errors.append('Current password is incorrect.')
+            if len(new_password) < 8:
+                errors.append('New password must be at least 8 characters.')
+            if new_password != confirm_password:
+                errors.append('New passwords do not match.')
+            
+            if errors:
+                for error in errors:
+                    flash(error, 'error')
+                return redirect(url_for('admin.settings'))
+            
+            current_user.set_password(new_password)
+            db.session.commit()
+            flash('Password changed.', 'success')
+        
+        elif action == 'avatar':
+            if 'avatar_file' not in request.files or not request.files['avatar_file'].filename:
+                flash('Please select an image to upload.', 'error')
+                return redirect(url_for('admin.settings'))
+            
+            try:
+                file = request.files['avatar_file']
+                result = S3Service.upload_file(
+                    file,
+                    folder='avatars',
+                    allowed_extensions={'jpg', 'jpeg', 'png', 'gif', 'webp'}
+                )
+                
+                if current_user.avatar_url:
+                    old_key = extract_s3_key(current_user.avatar_url)
+                    if old_key and 'avatars/' in old_key:
+                        try:
+                            S3Service.delete_file(old_key)
+                        except:
+                            pass
+                
+                current_user.avatar_url = result['url']
+                db.session.commit()
+                flash('Avatar uploaded successfully.', 'success')
+                
+            except ValueError as e:
+                flash(str(e), 'error')
+            except Exception as e:
+                flash(f'Upload failed. Please try again.', 'error')
+            
+        return redirect(url_for('admin.settings'))
+    
+    return render_template('admin/settings.html', user=current_user)
+
+def extract_s3_key(url):
+    public_url = current_app.config.get('S3_PUBLIC_URL', '')
+    if public_url and public_url in url:
+        return url.split(public_url)[-1].lstrip('/')
+
+    bucket = current_app.config['S3_BUCKET_NAME']
+    if bucket in url:
+        parts = url.split(f'{bucket}/')
+        return parts[-1] if len(parts) > 1 else None
+    return None
