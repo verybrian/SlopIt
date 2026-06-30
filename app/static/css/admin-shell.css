@@ -1,5 +1,3 @@
-/* admin-shell.css — persistent app shell: sidebar, topbar, layout */
-
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
 
 .admin-body {
@@ -8,8 +6,6 @@
   padding: 0;
   min-height: 100vh;
 }
-
-/* ── Shell layout ─────────────────────────────────── */
 
 .shell {
   display: flex;
@@ -29,8 +25,6 @@
   padding: var(--space-6);
   overflow-y: auto;
 }
-
-/* ── Sidebar ──────────────────────────────────────── */
 
 .sidebar {
   width: 220px;
@@ -133,8 +127,6 @@
   color: var(--text);
 }
 
-/* ── Sidebar bottom user strip ────────────────────── */
-
 .sb-bottom {
   border-top: 1px solid var(--border-soft);
   padding: var(--space-3) var(--space-2);
@@ -188,21 +180,39 @@
   letter-spacing: 0.06em;
 }
 
-.sb-logout {
-  color: var(--text-dim);
-  font-size: 15px;
-  transition: color var(--transition);
-  flex-shrink: 0;
+.sb-logout-link {
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-2) var(--space-2) 0;
+  border-radius: var(--radius);
+  border: 1px solid #2a2a2a;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all var(--transition);
 }
 
-.sb-logout:hover {
-  color: var(--danger);
+.sb-logout-link:hover {
+  background: var(--bg-raised);
   opacity: 1;
 }
 
-/* ── Top bar ──────────────────────────────────────── */
+.sb-version {
+  padding: var(--space-3) var(--space-3) 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #444;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-top: 1px solid #1a1a1a;
+  margin-top: var(--space-3);
+}
 
 .topbar {
   display: flex;
@@ -232,7 +242,6 @@
   gap: var(--space-2);
 }
 
-/* Topbar-specific button overrides */
 .tb-btn-ghost {
   background: transparent;
   border: 1px solid var(--border);
@@ -273,8 +282,6 @@
 .tb-btn-primary:hover {
   opacity: 0.85;
 }
-
-/* ── Flash messages inside shell ─────────────────── */
 
 .admin-alerts {
   padding: var(--space-3) var(--space-6) 0;

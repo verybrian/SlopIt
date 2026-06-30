@@ -76,15 +76,24 @@
       <div class="sb-bottom">
         <div class="sb-user">
           <div class="sb-avatar">
-            {{ current_user.username[:2].upper() }}
+            {% if current_user.avatar_url %}
+              <img src="{{ current_user.avatar_url }}" alt="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            {% else %}
+              {{ current_user.username[:2].upper() }}
+            {% endif %}
           </div>
           <div class="sb-user-info">
-            <span class="sb-uname">{{ current_user.username }}</span>
+            <span class="sb-uname">{{ current_user.display_name or current_user.username }}</span>
             <span class="sb-role">{{ current_user.role.value }}</span>
           </div>
-          <a href="{{ url_for('auth.logout') }}" class="sb-logout" title="Log out">
-            <i class="ti ti-logout" aria-hidden="true"></i>
-          </a>
+        </div>
+        
+        <a href="{{ url_for('auth.logout') }}" class="sb-logout-link">
+          Log out
+        </a>
+        
+        <div class="sb-version">
+          {{ site_name }} v{{ config.get('APP_VERSION', '0.1.0') }}
         </div>
       </div>
     </aside>

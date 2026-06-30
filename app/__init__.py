@@ -47,6 +47,7 @@ def create_app(config_class=Config):
             'site_name': app.config['SITE_NAME'],
             'site_description': app.config['SITE_DESCRIPTION'],
             'site_url': app.config['SITE_URL'],
+            'config': app.config,
         }
     
     return app
