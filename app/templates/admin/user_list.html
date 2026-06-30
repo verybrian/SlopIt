@@ -57,7 +57,7 @@
                 <td class="dash-table-mono">{{ user.created_at|timeago }}</td>
                 <td class="dash-table-action">
                   {% if user.id != current_user.id %}
-                    <a href="#" onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')">Delete →</a>
+                    <a href="#" onclick="confirmDelete('{{ user.id }}', '{{ user.username }}', '{{ url_for('admin.user_delete', user_id=user.id) }}'); return false;">Delete →</a>
                   {% endif %}
                 </td>
               </tr>
@@ -91,16 +91,28 @@
 
 {% block scripts %}
 <script>
-function confirmDelete(userId, username) {
+function confirmDelete(userId, username, deleteUrl) {
   document.getElementById('deleteUserName').textContent = username;
-  document.getElementById('deleteForm').action = '/admin/users/' + userId + '/delete';
+  document.getElementById('deleteForm').action = deleteUrl;
   document.getElementById('deleteModal').style.display = 'flex';
+  return false;
 }
 
 function closeModal() {
   document.getElementById('deleteModal').style.display = 'none';
 }
 
-document.querySelector('.modal-overlay')?.addEventListener('click', closeModal);
+document.addEventListener('DOMContentLoaded', function() {
+  var overlay = document.querySelector('.modal-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', closeModal);
+  }
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+});
 </script>
 {% endblock %}
