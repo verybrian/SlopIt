@@ -1,22 +1,23 @@
 import secrets
-from datetime import datetime, timedelta
+from flask import current_app, render_template
+from flask_mail import Message
+from app import mail
 
 def generate_invite_token(email):
-    """Generate a unique invitation token"""
     return secrets.token_urlsafe(32)
 
 def send_invite_email(email, token):
-    """Mock email function - replace with real email sending later"""
-    accept_url = f"http://localhost:5000/auth/accept-invite/{token}"
-    print(f"""
-    ═══════════════════════════════════════
-    📧 INVITATION EMAIL (Mock)
-    To: {email}
-    Subject: You're invited to join SlopIt CMS
+    site_url = current_app.config.get('SITE_URL')
+    invite_url = f"{site_url}/auth/accept-invite/{token}"
     
-    Click the link to set up your account:
-    {accept_url}
+    html_body = render_template('email/invite.html', invite_url=invite_url)
+    text_body = render_template('email/invite.txt', invite_url=invite_url)
     
-    This link expires in 7 days.
-    ═══════════════════════════════════════
-    """)
+    msg = Message(
+        subject="You're invited to join SlopIt CMS",
+        recipients=[email],
+        body=text_body,
+        html=html_body
+    )
+    
+    mail.send(msg)
