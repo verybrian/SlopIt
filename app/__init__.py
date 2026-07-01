@@ -43,11 +43,13 @@ def create_app(config_class=Config):
     
     @app.context_processor
     def inject_site_config():
+        from app.models import Collection
         return {
             'site_name': app.config['SITE_NAME'],
             'site_description': app.config['SITE_DESCRIPTION'],
             'site_url': app.config['SITE_URL'],
             'config': app.config,
+            'get_collections': lambda: Collection.query.order_by(Collection.label).all(),
         }
     
     return app

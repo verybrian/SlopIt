@@ -38,7 +38,7 @@
 {% if media_items.items %}
   <div class="media-grid">
     {% for media in media_items.items %}
-      <div class="media-card">
+      <div class="media-card" data-media-id="{{ media.id }}">
         <div class="media-thumb">
           {% if media.is_image() %}
             <img src="{{ media.url }}" alt="{{ media.alt_text or media.filename }}" loading="lazy">

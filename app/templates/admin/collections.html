@@ -21,11 +21,11 @@
 
   {% if collections %}
     <div class="collection-grid">
-      {% for item in collections %}
-        <a href="{{ url_for('admin.collection_edit', collection_id=item.collection.id) }}" class="collection-card">
+      {% for col in collections %}
+        <a href="{{ url_for('admin.collection_edit', collection_id=col.id) }}" class="collection-card">
           <div class="collection-card-header">
-            <span class="collection-card-name">{{ item.collection.label }}</span>
-            {% if item.collection.is_singleton %}
+            <span class="collection-card-name">{{ col.label }}</span>
+            {% if col.is_singleton %}
               <span class="collection-badge singleton">Singleton</span>
             {% else %}
               <span class="collection-badge">Multiple</span>
@@ -33,13 +33,13 @@
           </div>
           <div class="collection-card-meta">
             <span>
-              <span class="count">{{ item.entry_count }}</span> entries
+              <span class="count">{{ col.entries.count() }}</span> entries
             </span>
             <span>
-              <span class="count">{{ item.published_count }}</span> published
+              <span class="count">{{ col.entries.filter_by(status='published').count() }}</span> published
             </span>
             <span>
-              {{ item.collection.fields.count() }} fields
+              {{ col.fields.count() }} fields
             </span>
           </div>
           <div class="collection-card-arrow">Manage collection →</div>

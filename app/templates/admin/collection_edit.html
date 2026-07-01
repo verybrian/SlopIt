@@ -11,8 +11,13 @@
   {% if collection.is_singleton and entries %}
     <a href="#" class="btn tb-btn-primary">Edit {{ collection.label }}</a>
   {% else %}
-    <a href="#" class="btn tb-btn-primary">+ New entry</a>
+    <a href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}" class="btn tb-btn-primary">
+      + New entry
+    </a>
   {% endif %}
+  <a href="{{ url_for('admin.collection_fields', collection_id=collection.id) }}" class="btn tb-btn-primary">
+    Manage fields
+  </a>
 {% endblock %}
 
 {% block content %}
@@ -64,7 +69,7 @@
     
     {% if entries %}
       {% for entry in entries %}
-        <a href="#" class="entry-row">
+        <a href="{{ url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id) }}" class="entry-row">
           <div>
             <div class="entry-title">
               {{ entry.get_value('title') or 'Untitled' }}

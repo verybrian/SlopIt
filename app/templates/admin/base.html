@@ -23,32 +23,23 @@
         <span class="sb-name">SlopIt</span>
       </a>
 
-            <nav class="sb-nav">
+      <nav class="sb-nav">
         <div class="sb-section">Content</div>
 
         <a href="{{ url_for('admin.dashboard') }}"
-           class="sb-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+          class="sb-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
           <i class="ti ti-layout-dashboard" aria-hidden="true"></i>
           <span>Dashboard</span>
         </a>
 
-        <a href="{{ url_for('admin.collections') }}"
-          class="sb-item {% if request.endpoint == 'admin.collections' %}active{% endif %}">
-          <i class="ti ti-stack" aria-hidden="true"></i>
-          <span>Collections</span>
-        </a>
-
-        <a href="#"
-           class="sb-item {% if request.endpoint and request.endpoint.startswith('admin.pages') %}active{% endif %}">
-          <i class="ti ti-file-text" aria-hidden="true"></i>
-          <span>Pages</span>
-        </a>
-
-        <a href="#"
-           class="sb-item {% if request.endpoint and request.endpoint.startswith('admin.posts') %}active{% endif %}">
-          <i class="ti ti-pencil" aria-hidden="true"></i>
-          <span>Posts</span>
-        </a>
+        {% set collections = get_collections() %}
+        {% for col in collections %}
+          <a href="{{ url_for('admin.collection_edit', collection_id=col.id) }}"
+            class="sb-item {% if request.endpoint == 'admin.collection_edit' and request.view_args.get('collection_id') == col.id %}active{% endif %}">
+            <i class="ti ti-file-text" aria-hidden="true"></i>
+            <span>{{ col.label }}</span>
+          </a>
+        {% endfor %}
 
         <a href="{{ url_for('admin.media_library') }}"
           class="sb-item {% if request.endpoint == 'admin.media_library' %}active{% endif %}">
@@ -56,20 +47,30 @@
           <span>Media</span>
         </a>
 
+        {% if current_user.role.value == 'admin' %}
+          <div class="sb-section">Developer</div>
+
+          <a href="{{ url_for('admin.collections') }}"
+            class="sb-item {% if request.endpoint == 'admin.collections' %}active{% endif %}">
+            <i class="ti ti-stack" aria-hidden="true"></i>
+            <span>Collections</span>
+          </a>
+        {% endif %}
+
         <div class="sb-section">System</div>
 
         {% if current_user.role.value == 'admin' %}
-            <a href="{{ url_for('admin.user_list') }}"
-                class="sb-item {% if request.endpoint == 'admin.user_list' %}active{% endif %}">
-                <i class="ti ti-users" aria-hidden="true"></i>
-                <span>Users</span>
-            </a>
+          <a href="{{ url_for('admin.user_list') }}"
+            class="sb-item {% if request.endpoint == 'admin.user_list' %}active{% endif %}">
+            <i class="ti ti-users" aria-hidden="true"></i>
+            <span>Users</span>
+          </a>
 
-            <a href="{{ url_for('admin.api_keys') }}"
-              class="sb-item {% if request.endpoint == 'admin.api_keys' %}active{% endif %}">
-              <i class="ti ti-key" aria-hidden="true"></i>
-              <span>API Keys</span>
-            </a>
+          <a href="{{ url_for('admin.api_keys') }}"
+            class="sb-item {% if request.endpoint == 'admin.api_keys' %}active{% endif %}">
+            <i class="ti ti-key" aria-hidden="true"></i>
+            <span>API Keys</span>
+          </a>
         {% endif %}
 
         <a href="{{ url_for('admin.settings') }}"

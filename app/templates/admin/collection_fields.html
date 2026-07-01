@@ -1,0 +1,131 @@
+{% extends "admin/base.html" %}
+{% block title %}Fields — {{ collection.label }} — {{ site_name }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin.collections') }}" style="color: var(--text-dim); text-decoration: none;">Collections</a> / <a href="{{ url_for('admin.collection_edit', collection_id=collection.id) }}" style="color: var(--text-dim); text-decoration: none;">{{ collection.label }}</a> / Fields{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/collection_fields.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="fields-layout">
+  
+  <div class="add-panel">
+    <h2 style="font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: var(--space-4);">
+      Add field
+    </h2>
+    
+    <form method="POST" action="{{ url_for('admin.collection_fields', collection_id=collection.id) }}">
+      <input type="hidden" name="action" value="add_field">
+      
+      <div class="field">
+        <label for="name">Field name</label>
+        <input type="text" id="name" name="name" placeholder="hero_title" required>
+        <span style="font-size: 10px; color: var(--text-dim);">Lowercase, underscores. Used in API.</span>
+      </div>
+      
+      <div class="field">
+        <label for="label">Display label</label>
+        <input type="text" id="label" name="label" placeholder="Hero Title" required>
+      </div>
+      
+      <div class="field">
+        <label for="field_type">Field type</label>
+        <select id="field_type" name="field_type" onchange="toggleOptions(this.value)">
+          {% for ft in field_types %}
+            <option value="{{ ft }}">{{ ft | replace('_', ' ') | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="field" id="optionsField" style="display: none;">
+        <label for="options">Options (comma-separated)</label>
+        <input type="text" id="options" name="options" placeholder="Option 1, Option 2, Option 3">
+      </div>
+      
+      <div class="field field--inline">
+        <input type="checkbox" id="required" name="required">
+        <label for="required">Required field</label>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Add field</button>
+    </form>
+  </div>
+  
+  <div class="fields-list">
+    <div style="padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-soft);">
+      <span style="font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim);">
+        {{ collection.label }} — {{ fields|length }} fields
+      </span>
+    </div>
+    
+    {% if fields %}
+      {% for field in fields %}
+        <div class="field-card">
+          <div class="field-card-left">
+            <span class="field-type-badge {{ 'repeater' if field.field_type.value == 'repeater' }}">
+              {{ field.field_type.value | replace('_', ' ') }}
+            </span>
+            <div class="field-card-info">
+              <div class="field-card-label">{{ field.label }}</div>
+              <div class="field-card-name">{{ field.name }}</div>
+              <div class="field-card-meta">
+                {% if field.required %}<span>required</span>{% endif %}
+                <span>order: {{ field.order }}</span>
+              </div>
+              
+              {% if field.options %}
+                <div class="select-options">
+                  Options: {{ field.options|join(', ') }}
+                </div>
+              {% endif %}
+              
+              {% if field.field_type.value == 'repeater' and field.repeater_blocks.count() > 0 %}
+                <div class="block-preview">
+                  {% for block in field.repeater_blocks.order_by('order') %}
+                    <div class="block-preview-item">
+                      <span class="block-preview-dot"></span>
+                      {{ block.label }} ({{ block.sub_fields.count() }} fields)
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="field-card-actions">
+            {% if field.field_type.value == 'repeater' %}
+              <a href="{{ url_for('admin.repeater_blocks', field_id=field.id) }}" class="btn-sm">Blocks</a>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin.collection_fields', collection_id=collection.id) }}" style="display: inline;" onsubmit="return confirm('Delete this field and all its data?')">
+              <input type="hidden" name="action" value="delete_field">
+              <input type="hidden" name="field_id" value="{{ field.id }}">
+              <button type="submit" class="btn-sm danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div style="padding: var(--space-6); text-align: center; color: var(--text-dim); font-size: var(--text-sm);">
+        No fields yet. Add your first field.
+      </div>
+    {% endif %}
+  </div>
+  
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleOptions(value) {
+  var optionsField = document.getElementById('optionsField');
+  if (value === 'select') {
+    optionsField.style.display = 'block';
+  } else {
+    optionsField.style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

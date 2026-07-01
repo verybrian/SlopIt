@@ -1,0 +1,42 @@
+{# 
+  Usage: 
+  {% with field=field, current_value=entry.get_value(field.name) if entry else '', field_name=field.name %}
+    {% include 'admin/_image_field.html' %}
+  {% endwith %}
+#}
+
+<div class="image-field" data-field="{{ field_name }}">
+  
+  <div class="image-preview-area">
+    <div class="image-preview {{ 'has-image' if current_value else '' }}" id="preview_{{ field_name }}">
+      {% if current_value %}
+        <img src="{{ current_value }}" alt="Preview" id="img_{{ field_name }}">
+      {% else %}
+        <span class="image-placeholder-text">No image selected</span>
+      {% endif %}
+    </div>
+    
+    <div class="image-actions">
+      <button type="button" class="btn btn-sm" onclick="openMediaLibrary('{{ field_name }}')">
+        Browse library
+      </button>
+      <label class="btn btn-sm" style="cursor: pointer;">
+        Upload
+        <input type="file" name="{{ field_name }}_file" accept="image/*" style="display: none;" onchange="previewUpload(this, '{{ field_name }}')">
+      </label>
+      {% if current_value %}
+        <button type="button" class="btn btn-sm danger" onclick="clearImage('{{ field_name }}')">Remove</button>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="field" style="margin-top: var(--space-3);">
+    <label for="{{ field_name }}_alt">Alt text</label>
+    <input type="text" id="{{ field_name }}_alt" name="{{ field_name }}_alt" 
+           placeholder="Describe the image" 
+           value="{{ entry.get_value(field_name ~ '_alt') if entry else '' }}">
+  </div>
+  
+  <input type="hidden" name="{{ field_name }}" id="input_{{ field_name }}" value="{{ current_value or '' }}">
+  <input type="hidden" name="{{ field_name }}_media_id" id="media_id_{{ field_name }}" value="">
+</div>

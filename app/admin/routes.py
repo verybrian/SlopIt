@@ -2,10 +2,11 @@ import os
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.admin import bp
-from app.models import Collection, Entry, User
+from app.models import Collection, Entry, EntryValue, User
 from app.models.user import UserRole
 from app.models.api_key import ApiKey
 from app.models.media import Media
+from app.models.field import Field, FieldType
 from app.utils import generate_invite_token, send_invite_email
 from app.services.s3 import S3Service
 from app.services.media_service import upload_media, delete_media
@@ -394,21 +395,12 @@ def media_detail(media_id):
 @bp.route('/collections')
 @login_required
 def collections():
+    if current_user.role.value != 'admin':
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
     collections = Collection.query.order_by(Collection.label).all()
-    
-    collection_data = []
-    for col in collections:
-        entry_count = Entry.query.filter_by(collection_id=col.id).count()
-        published_count = Entry.query.filter_by(
-            collection_id=col.id, status='published'
-        ).count()
-        collection_data.append({
-            'collection': col,
-            'entry_count': entry_count,
-            'published_count': published_count
-        })
-    
-    return render_template('admin/collections.html', collections=collection_data)
+    return render_template('admin/collections.html', collections=collections)
 
 
 @bp.route('/collections/<collection_id>')
@@ -417,3 +409,282 @@ def collection_edit(collection_id):
     collection = Collection.query.get_or_404(collection_id)
     entries = Entry.query.filter_by(collection_id=collection.id).order_by(Entry.updated_at.desc()).all()
     return render_template('admin/collection_edit.html', collection=collection, entries=entries)
+
+
+@bp.route('/collections/<collection_id>/fields', methods=['GET', 'POST'])
+@login_required
+def collection_fields(collection_id):
+    collection = Collection.query.get_or_404(collection_id)
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add_field':
+            name = request.form.get('name', '').strip().lower().replace(' ', '_')
+            label = request.form.get('label', '').strip()
+            field_type = request.form.get('field_type', 'text')
+            required = request.form.get('required') == 'on'
+            options = None
+            
+            if field_type == 'select':
+                options_text = request.form.get('options', '')
+                options = [o.strip() for o in options_text.split(',') if o.strip()]
+            
+            if not name or not label:
+                flash('Name and label are required.', 'error')
+                return redirect(url_for('admin.collection_fields', collection_id=collection.id))
+            
+            existing = Field.query.filter_by(collection_id=collection.id, name=name).first()
+            if existing:
+                flash(f'Field "{name}" already exists.', 'error')
+                return redirect(url_for('admin.collection_fields', collection_id=collection.id))
+            
+            max_order = db.session.query(db.func.max(Field.order)).filter_by(collection_id=collection.id).scalar() or 0
+            
+            field = Field(
+                collection_id=collection.id,
+                name=name,
+                label=label,
+                field_type=FieldType(field_type),
+                required=required,
+                options=options,
+                order=max_order + 1
+            )
+            db.session.add(field)
+            db.session.commit()
+            
+            if field_type == 'repeater':
+                flash('Repeater field created. Now add blocks to it.', 'success')
+                return redirect(url_for('admin.repeater_blocks', field_id=field.id))
+            
+            flash(f'Field "{label}" added.', 'success')
+        
+        elif action == 'delete_field':
+            field_id = request.form.get('field_id')
+            field = Field.query.get_or_404(field_id)
+            label = field.label
+            db.session.delete(field)
+            db.session.commit()
+            flash(f'Field "{label}" deleted.', 'success')
+        
+        return redirect(url_for('admin.collection_fields', collection_id=collection.id))
+    
+    fields = collection.fields.order_by(Field.order).all()
+    return render_template('admin/collection_fields.html', 
+                         collection=collection, 
+                         fields=fields,
+                         field_types=[ft.value for ft in FieldType])
+
+
+@bp.route('/fields/<field_id>/blocks', methods=['GET', 'POST'])
+@login_required
+def repeater_blocks(field_id):
+    field = Field.query.get_or_404(field_id)
+    collection = Collection.query.get(field.collection_id)
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add_block':
+            name = request.form.get('name', '').strip().lower().replace(' ', '_')
+            label = request.form.get('label', '').strip()
+            
+            if not name or not label:
+                flash('Name and label are required.', 'error')
+                return redirect(url_for('admin.repeater_blocks', field_id=field.id))
+            
+            max_order = db.session.query(db.func.max(RepeaterBlock.order)).filter_by(field_id=field.id).scalar() or 0
+            
+            block = RepeaterBlock(
+                field_id=field.id,
+                name=name,
+                label=label,
+                order=max_order + 1
+            )
+            db.session.add(block)
+            db.session.commit()
+            flash(f'Block "{label}" added.', 'success')
+        
+        elif action == 'delete_block':
+            block_id = request.form.get('block_id')
+            block = RepeaterBlock.query.get_or_404(block_id)
+            label = block.label
+            db.session.delete(block)
+            db.session.commit()
+            flash(f'Block "{label}" deleted.', 'success')
+        
+        return redirect(url_for('admin.repeater_blocks', field_id=field.id))
+    
+    blocks = field.repeater_blocks.order_by(RepeaterBlock.order).all()
+    sub_field_types = [ft.value for ft in FieldType if ft.value != 'repeater']
+    
+    return render_template('admin/repeater_blocks.html',
+                         field=field,
+                         collection=collection,
+                         blocks=blocks,
+                         field_types=sub_field_types)
+
+@bp.route('/blocks/<block_id>/subfields', methods=['POST'])
+@login_required
+def add_subfield(block_id):
+    block = RepeaterBlock.query.get_or_404(block_id)
+    field = Field.query.get(block.field_id)
+    
+    action = request.form.get('action')
+    
+    if action == 'add_subfield':
+        name = request.form.get('name', '').strip().lower().replace(' ', '_')
+        label = request.form.get('label', '').strip()
+        field_type = request.form.get('field_type', 'text')
+        required = request.form.get('required') == 'on'
+        options = None
+        
+        if field_type == 'select':
+            options_text = request.form.get('options', '')
+            options = [o.strip() for o in options_text.split(',') if o.strip()]
+        
+        if not name or not label:
+            flash('Name and label are required.', 'error')
+            return redirect(url_for('admin.repeater_blocks', field_id=field.id))
+        
+        max_order = db.session.query(db.func.max(RepeaterSubField.order)).filter_by(block_id=block.id).scalar() or 0
+        
+        sub_field = RepeaterSubField(
+            block_id=block.id,
+            name=name,
+            label=label,
+            field_type=FieldType(field_type),
+            required=required,
+            options=options,
+            order=max_order + 1
+        )
+        db.session.add(sub_field)
+        db.session.commit()
+        flash(f'Sub-field "{label}" added to {block.label}.', 'success')
+    
+    elif action == 'delete_subfield':
+        sub_field_id = request.form.get('sub_field_id')
+        sub_field = RepeaterSubField.query.get_or_404(sub_field_id)
+        label = sub_field.label
+        db.session.delete(sub_field)
+        db.session.commit()
+        flash(f'Sub-field "{label}" deleted.', 'success')
+    
+    return redirect(url_for('admin.repeater_blocks', field_id=field.id))
+
+
+@bp.route('/collections/<collection_id>/entries/new', methods=['GET', 'POST'])
+@bp.route('/collections/<collection_id>/entries/<entry_id>', methods=['GET', 'POST'])
+@login_required
+def entry_edit(collection_id, entry_id=None):
+    collection = Collection.query.get_or_404(collection_id)
+    entry = None
+    
+    if entry_id:
+        entry = Entry.query.get_or_404(entry_id)
+        if entry.collection_id != collection.id:
+            flash('Entry not found in this collection.', 'error')
+            return redirect(url_for('admin.collection_edit', collection_id=collection.id))
+    
+    fields = collection.fields.order_by(Field.order).all()
+    
+    if request.method == 'POST':
+        if not entry:
+            entry = Entry(collection_id=collection.id, status='draft')
+            db.session.add(entry)
+            db.session.flush()
+        
+        status = request.form.get('_status')
+        if status in ['draft', 'published']:
+            entry.status = status
+            if status == 'published' and not entry.published_at:
+                entry.published_at = datetime.now(timezone.utc)
+        
+        slug_value = request.form.get('slug')
+        if slug_value:
+            entry.slug = slug_value
+        
+        for field in fields:
+            if field.name == 'author':
+                entry_value = EntryValue.query.filter_by(
+                    entry_id=entry.id,
+                    field_id=field.id
+                ).first()
+                if not entry_value:
+                    entry_value = EntryValue(
+                        entry_id=entry.id,
+                        field_id=field.id
+                    )
+                    db.session.add(entry_value)
+                entry_value.value = current_user.display_name or current_user.username
+                continue
+
+            if field.field_type.value == 'repeater':
+                continue
+            
+            if field.field_type.value == 'image':
+                file_key = f'{field.name}_file'
+                media_id_key = f'{field.name}_media_id'
+                
+                value = None
+                
+                if file_key in request.files and request.files[file_key].filename:
+                    try:
+                        media = upload_media(
+                            file=request.files[file_key],
+                            user_id=current_user.id,
+                            folder=collection.name,
+                            alt_text=request.form.get(f'{field.name}_alt', '')
+                        )
+                        value = media.url
+                    except ValueError as e:
+                        flash(f'Image upload failed: {str(e)}', 'error')
+                        continue
+                
+                elif request.form.get(media_id_key):
+                    media_id = request.form.get(media_id_key)
+                    media = Media.query.get(media_id)
+                    if media:
+                        value = media.url
+                
+                elif entry:
+                    existing = entry.get_value(field.name)
+                    value = existing if existing else None
+            else:
+                value = request.form.get(field.name, '')
+            
+            entry_value = EntryValue.query.filter_by(
+                entry_id=entry.id, 
+                field_id=field.id
+            ).first()
+            
+            if not entry_value:
+                entry_value = EntryValue(
+                    entry_id=entry.id,
+                    field_id=field.id
+                )
+                db.session.add(entry_value)
+            
+            entry_value.value = value or ''
+        
+        db.session.commit()
+        
+        action = request.form.get('_action', 'save')
+        if action == 'publish':
+            entry.status = 'published'
+            if not entry.published_at:
+                entry.published_at = datetime.now(timezone.utc)
+            db.session.commit()
+            flash('Entry published!', 'success')
+        else:
+            flash('Entry saved.', 'success')
+        
+        if collection.is_singleton:
+            return redirect(url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id))
+        
+        return redirect(url_for('admin.collection_edit', collection_id=collection.id))
+    
+    return render_template('admin/entry_edit.html',
+                         collection=collection,
+                         entry=entry,
+                         fields=fields)
