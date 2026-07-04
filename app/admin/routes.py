@@ -408,7 +408,15 @@ def collections():
 def collection_edit(collection_id):
     collection = Collection.query.get_or_404(collection_id)
     entries = Entry.query.filter_by(collection_id=collection.id).order_by(Entry.updated_at.desc()).all()
-    return render_template('admin/collection_edit.html', collection=collection, entries=entries)
+    
+    title_field = collection.fields.filter(
+        Field.field_type.in_([FieldType.TEXT, FieldType.RICH_TEXT])
+    ).order_by(Field.order).first()
+    
+    return render_template('admin/collection_content.html', 
+                         collection=collection, 
+                         entries=entries,
+                         title_field=title_field)
 
 
 @bp.route('/collections/<collection_id>/fields', methods=['GET', 'POST'])
@@ -688,3 +696,20 @@ def entry_edit(collection_id, entry_id=None):
                          collection=collection,
                          entry=entry,
                          fields=fields)
+
+
+@bp.route('/collections/<collection_id>/entries/<entry_id>/delete', methods=['POST'])
+@login_required
+def entry_delete(collection_id, entry_id):
+    collection = Collection.query.get_or_404(collection_id)
+    entry = Entry.query.get_or_404(entry_id)
+    
+    if entry.collection_id != collection.id:
+        flash('Entry not found.', 'error')
+        return redirect(url_for('admin.collection_edit', collection_id=collection.id))
+    
+    db.session.delete(entry)
+    db.session.commit()
+    
+    flash('Entry deleted.', 'success')
+    return redirect(url_for('admin.collection_edit', collection_id=collection.id))

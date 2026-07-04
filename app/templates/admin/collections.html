@@ -22,7 +22,7 @@
   {% if collections %}
     <div class="collection-grid">
       {% for col in collections %}
-        <a href="{{ url_for('admin.collection_edit', collection_id=col.id) }}" class="collection-card">
+        <a href="{{ url_for('admin.collection_fields', collection_id=col.id) }}" class="collection-card">
           <div class="collection-card-header">
             <span class="collection-card-name">{{ col.label }}</span>
             {% if col.is_singleton %}
@@ -42,7 +42,7 @@
               {{ col.fields.count() }} fields
             </span>
           </div>
-          <div class="collection-card-arrow">Manage collection →</div>
+          <div class="collection-card-arrow">Manage schema →</div>
         </a>
       {% endfor %}
     </div>
