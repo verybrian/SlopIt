@@ -1,215 +1,16 @@
 {% extends "admin/base.html" %} {% block title %}{{ collection.label }} — {{
 site_name }}{% endblock %} {% block breadcrumb %}{{ collection.label }}{%
 endblock %} {% block styles %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/admin-user-list.css') }}"
-/>
-<style>
-  .content-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-4);
-  }
-
-  .content-header-left {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-  }
-
-  .content-count {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--text-dim);
-  }
-
-  .entries-table {
-    background: #111;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  .entry-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid #1a1a1a;
-    text-decoration: none;
-    transition: background var(--transition);
-  }
-
-  .entry-row:last-child {
-    border-bottom: none;
-  }
-
-  .entry-row:hover {
-    background: #141414;
-  }
-
-  .entry-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .entry-title {
-    font-size: var(--text-sm);
-    color: var(--text);
-    margin-bottom: 2px;
-  }
-
-  .entry-title.untitled {
-    color: var(--text-dim);
-    font-style: italic;
-  }
-
-  .entry-meta {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--text-dim);
-    display: flex;
-    gap: var(--space-3);
-    align-items: center;
-  }
-
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .status-dot.published {
-    background: var(--success);
-  }
-  .status-dot.draft {
-    background: var(--text-dim);
-  }
-
-  .entry-actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-shrink: 0;
-  }
-
-  .btn-row {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    transition: all var(--transition);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .btn-row:hover {
-    border-color: var(--text-dim);
-    color: var(--text);
-  }
-
-  .btn-row.danger:hover {
-    border-color: var(--danger);
-    color: var(--danger);
-  }
-
-  .empty-state {
-    padding: var(--space-8) var(--space-6);
-    text-align: center;
-  }
-
-  .empty-state-icon {
-    font-size: 2rem;
-    margin-bottom: var(--space-3);
-    opacity: 0.3;
-  }
-
-  .empty-state-text {
-    font-size: var(--text-base);
-    color: var(--text-muted);
-    margin-bottom: var(--space-2);
-  }
-
-  .empty-state-hint {
-    font-size: var(--text-sm);
-    color: var(--text-dim);
-    margin-bottom: var(--space-5);
-  }
-
-  /* Modal */
-  .modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
-  .modal.open {
-    display: flex;
-  }
-
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
-  }
-
-  .modal-content {
-    position: relative;
-    background: #1a1a1a;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    max-width: 420px;
-    width: 90%;
-  }
-
-  .modal-title {
-    font-size: var(--text-lg);
-    font-weight: 500;
-    color: var(--text);
-    margin: 0 0 var(--space-3);
-  }
-
-  .modal-text {
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-    line-height: 1.6;
-    margin: 0 0 var(--space-5);
-  }
-
-  .modal-text strong {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .modal-actions {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: flex-end;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/collection_content.css') }}"/>
 {% endblock %} {% block topbar_actions %}
-<a
-  href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}"
-  class="btn tb-btn-primary"
->
+
+<a href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}" class="btn tb-btn-primary">
   + New {{ collection.label.rstrip('s') }}
 </a>
-{% endblock %} {% block content %}
+{% endblock %}
 
+{% block content %}
 <div class="content-header">
   <div class="content-header-left">
     <h1
@@ -281,7 +82,6 @@ endblock %} {% block styles %}
 </div>
 {% endif %}
 
-<!-- Delete modal -->
 <div class="modal" id="deleteModal">
   <div class="modal-overlay" onclick="closeModal()"></div>
   <div class="modal-content">
