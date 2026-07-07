@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/collections.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -76,10 +77,10 @@
             <div class="collection-item-actions">
               <a href="{{ url_for('admin.collection_fields', collection_id=col.id) }}" class="btn-xs">Fields</a>
               <button onclick="openEditModal('{{ col.id }}', '{{ col.label }}', '{{ col.description or '' }}', '{{ col.kind.value }}')" class="btn-xs">Edit</button>
-              <form method="POST" style="display: inline;" onsubmit="return confirm('Delete &quot;{{ col.label }}&quot; and all its entries? This cannot be undone.')">
+              <form method="POST" style="display: inline;">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="collection_id" value="{{ col.id }}">
-                <button type="submit" class="btn-xs danger">Delete</button>
+                <button type="button" onclick="confirmDeleteCollection('{{ col.id }}', '{{ col.label }}')" class="btn-xs danger">Delete</button>
               </form>
             </div>
           </div>
@@ -95,11 +96,11 @@
   
 </div>
 
-<div class="modal" id="editModal">
+<div class="modal" id="editModal" style="display: none;">
   <div class="modal-overlay" onclick="closeEditModal()"></div>
   <div class="modal-content">
     <h3 class="modal-title">Edit collection</h3>
-    <form method="POST">
+    <form method="POST" action="{{ url_for('admin.collections') }}">
       <input type="hidden" name="action" value="edit">
       <input type="hidden" name="collection_id" id="editCollectionId">
       
@@ -121,6 +122,22 @@
   </div>
 </div>
 
+<div id="deleteModal" class="modal" style="display: none;">
+  <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+  <div class="modal-content">
+    <h3 class="modal-title">Delete item</h3>
+    <p class="modal-text">
+      Are you sure you want to delete "<strong id="deleteItemTitle"></strong>"?
+    </p>
+    <div class="modal-actions">
+      <button onclick="closeDeleteModal()" class="btn btn-ghost">Cancel</button>
+      <form id="deleteForm" method="POST" style="display: inline;">
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -135,15 +152,32 @@ function openEditModal(id, label, description, kind) {
   document.getElementById('editLabel').value = label;
   document.getElementById('editDescription').value = description || '';
   document.getElementById('editDescriptionField').style.display = kind === 'list' ? 'block' : 'none';
-  document.getElementById('editModal').classList.add('open');
+  document.getElementById('editModal').style.display = 'flex';
 }
 
 function closeEditModal() {
-  document.getElementById('editModal').classList.remove('open');
+  document.getElementById('editModal').style.display = 'none';
+}
+
+function confirmDeleteCollection(colId, colLabel) {
+  document.getElementById('deleteItemTitle').textContent = colLabel;
+  document.getElementById('deleteForm').action = '';
+  var form = document.getElementById('deleteForm');
+  form.innerHTML = '<input type="hidden" name="action" value="delete">' +
+                   '<input type="hidden" name="collection_id" value="' + colId + '">' +
+                   '<button type="submit" class="btn btn-danger">Delete</button>';
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeEditModal();
+  if (e.key === 'Escape') {
+    closeEditModal();
+    closeDeleteModal();
+  }
 });
 </script>
 {% endblock %}
