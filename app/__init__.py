@@ -1,6 +1,6 @@
 import os
 import pytz
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -51,6 +51,10 @@ def create_app(config_class=Config):
             'config': app.config,
             'get_collections': lambda: Collection.query.order_by(Collection.label).all(),
         }
+
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('errors/404.html'), 404
     
     return app
 
