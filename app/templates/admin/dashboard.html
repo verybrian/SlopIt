@@ -46,29 +46,7 @@
   </div>
 
   <div class="dash-two-col">
-    <div class="dash-panel">
-      <div class="dash-panel-title">Activity</div>
-      {% if activity %}
-        {% for item in activity %}
-          <div class="activity-item">
-            <div class="activity-dot activity-dot--{{ item.type }}"></div>
-            <div>
-              <div class="activity-text">
-                <strong>{{ item.actor }}</strong> {{ item.action }}
-              </div>
-              <div class="activity-time">
-                {{ item.timestamp|timeago }} · {{ item.collection }}
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p class="dash-empty-hint">No activity yet.</p>
-      {% endif %}
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-      
+    {% if is_admin %}
       <div class="dash-panel">
         <div class="dash-panel-title">Activity</div>
         {% if activity %}
@@ -77,9 +55,11 @@
               <div class="activity-dot activity-dot--{{ item.type }}"></div>
               <div>
                 <div class="activity-text">
-                  <strong>{{ item.actor }}</strong> {{ item.action }}
+                  <strong>{{ item.user }}</strong> {{ item.action }} <strong>{{ item.actor }}</strong>
                 </div>
-                <div class="activity-time">{{ item.timestamp|timeago }}</div>
+                <div class="activity-time">
+                  {{ item.timestamp|timeago }} · {{ item.collection }}
+                </div>
               </div>
             </div>
           {% endfor %}
@@ -87,34 +67,33 @@
           <p class="dash-empty-hint">No activity yet.</p>
         {% endif %}
       </div>
+    {% endif %}
 
-      <div class="dash-panel">
-        <div class="dash-panel-title">Quick links</div>
-        <a href="{{ url_for('admin.media_library') }}" class="dash-col-item" style="text-decoration: none;">
-          <span class="dash-col-name">Media library</span>
+    <div class="dash-panel">
+      <div class="dash-panel-title">Quick links</div>
+      <a href="{{ url_for('admin.media_library') }}" class="dash-col-item" style="text-decoration: none;">
+        <span class="dash-col-name">Media library</span>
+        <span class="dash-col-arrow">→</span>
+      </a>
+      <a href="{{ url_for('admin.settings') }}" class="dash-col-item" style="text-decoration: none;">
+        <span class="dash-col-name">Profile settings</span>
+        <span class="dash-col-arrow">→</span>
+      </a>
+      {% if is_admin %}
+        <a href="{{ url_for('admin.collections') }}" class="dash-col-item" style="text-decoration: none;">
+          <span class="dash-col-name">Manage collections</span>
           <span class="dash-col-arrow">→</span>
         </a>
-        <a href="{{ url_for('admin.settings') }}" class="dash-col-item" style="text-decoration: none;">
-          <span class="dash-col-name">Profile settings</span>
+        <a href="{{ url_for('admin.user_list') }}" class="dash-col-item" style="text-decoration: none;">
+          <span class="dash-col-name">Manage users</span>
           <span class="dash-col-arrow">→</span>
         </a>
-        {% if is_admin %}
-          <a href="{{ url_for('admin.collections') }}" class="dash-col-item" style="text-decoration: none;">
-            <span class="dash-col-name">Manage collections</span>
-            <span class="dash-col-arrow">→</span>
-          </a>
-          <a href="{{ url_for('admin.user_list') }}" class="dash-col-item" style="text-decoration: none;">
-            <span class="dash-col-name">Manage users</span>
-            <span class="dash-col-arrow">→</span>
-          </a>
-          <a href="{{ url_for('admin.api_keys') }}" class="dash-col-item" style="text-decoration: none;">
-            <span class="dash-col-name">API keys</span>
-            <span class="dash-col-arrow">→</span>
-          </a>
-        {% endif %}
-      </div>
+        <a href="{{ url_for('admin.api_keys') }}" class="dash-col-item" style="text-decoration: none;">
+          <span class="dash-col-name">API keys</span>
+          <span class="dash-col-arrow">→</span>
+        </a>
+      {% endif %}
     </div>
-
   </div>
 
 {% endblock %}

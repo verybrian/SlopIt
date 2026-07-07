@@ -23,21 +23,8 @@ def dashboard():
         'media_total': Media.query.count(),
         'users_total': User.query.filter_by(is_deleted=False).count() if is_admin else 0,
     }
-    recent_entries = Entry.query.order_by(Entry.updated_at.desc()).limit(8).all()
-    recent_items = []
-    for entry in recent_entries:
-        col = Collection.query.get(entry.collection_id)
-        entry_data = entry.to_dict()
-        recent_items.append({
-            'id': entry.id,
-            'collection_id': col.id,
-            'collection_label': col.label,
-            'title': entry_data.get('title', entry_data.get('heading', 'Untitled')),
-            'updated_at': entry.updated_at,
-            'edit_url': url_for('admin.entry_edit', collection_id=col.id, entry_id=entry.id),
-        })
-    activity = generate_activity_feed()
-    return render_template('admin/dashboard.html', stats=stats, collections=collections, recent_items=recent_items, activity=activity, is_admin=is_admin)
+    activity = generate_activity_feed() if is_admin else []
+    return render_template('admin/dashboard.html', stats=stats, collections=collections,  activity=activity, is_admin=is_admin)
 
 
 def generate_activity_feed():
