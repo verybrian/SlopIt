@@ -9,7 +9,7 @@ from app import db
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('admin.dashboard'))
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -24,7 +24,7 @@ def login():
         login_user(user)
         next_page = request.args.get('next')
         flash('Welcome back!', 'success')
-        return redirect(next_page or url_for('main.index'))
+        return redirect(next_page or url_for('admin.dashboard'))
     
     return render_template('auth/login.html')
 
