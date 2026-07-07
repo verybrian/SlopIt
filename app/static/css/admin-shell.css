@@ -42,17 +42,17 @@
 .sb-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-5) var(--space-4);
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  height: 52px;
   border-bottom: 1px solid var(--border-soft);
   text-decoration: none;
+  flex-shrink: 0;
 }
 
-.sb-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
+.sb-brand img {
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
