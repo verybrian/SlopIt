@@ -181,7 +181,7 @@ function closeMediaLibrary() {
 function loadMediaImages() {
   var grid = document.getElementById('mediaGrid');
   grid.innerHTML = '<p style="color: var(--text-dim); font-size: var(--text-sm); padding: var(--space-4);">Loading...</p>';
-  fetch('/admin/media?type=image')
+  fetch('/d/media?type=image')
     .then(r => r.text())
     .then(html => {
       var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -237,7 +237,7 @@ function clearImage(fieldName) {
 document.addEventListener('DOMContentLoaded', function() {
   var categorySelect = document.getElementById('category');
   if (categorySelect) {
-    fetch('/admin/api/categories')
+    fetch('/d/api/categories')
       .then(r => r.json())
       .then(categories => {
         categories.forEach(function(cat) {

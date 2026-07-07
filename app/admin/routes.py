@@ -401,7 +401,6 @@ def collections():
             collection_id = request.form.get('collection_id')
             collection = Collection.query.get_or_404(collection_id)
 
-            # Count entries for confirmation message
             entry_count = collection.entries.count()
             db.session.delete(collection)
             db.session.commit()
