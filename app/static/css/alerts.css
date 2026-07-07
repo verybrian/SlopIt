@@ -14,7 +14,7 @@
   background: var(--bg-surface);
 }
 
-.alert-success { border-color: var(--success); color: var(--success); }
+.alert-success { border-color: var(--info); color: var(--info); }
 .alert-danger   { border-color: var(--danger);  color: var(--danger);  }
 .alert-warning  { border-color: var(--warn);    color: var(--warn);    }
 .alert-info     { border-color: var(--info);    color: var(--info);    }

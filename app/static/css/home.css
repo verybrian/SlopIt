@@ -78,7 +78,7 @@
 }
 
 .home__meta-value--ok {
-  color: var(--success);
+  color: var(--info);
 }
 
 .home-footer {

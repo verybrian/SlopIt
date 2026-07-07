@@ -167,19 +167,18 @@ def api_key_generate():
         flash('Please provide a name for the key.', 'error')
         return redirect(url_for('admin.api_keys'))
 
-    public_key, secret_key = ApiKey.generate_keys()
+    key = ApiKey.generate_key()
 
     api_key = ApiKey(
         name=name,
-        public_key=public_key,
-        secret_hash=ApiKey.hash_secret(secret_key),
+        key=key,
         created_by=current_user.id
     )
 
     db.session.add(api_key)
     db.session.commit()
 
-    flash(f'API key created! Secret key (shown once): {secret_key}', 'success')
+    flash(f'API key created: {key}', 'success')
     return redirect(url_for('admin.api_keys'))
 
 

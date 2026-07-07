@@ -33,7 +33,7 @@
   opacity: 1;
 }
 
-.toast.toast-success { border-left: 3px solid var(--success); }
+.toast.toast-success { border-left: 3px solid var(--info); }
 .toast.toast-error { border-left: 3px solid var(--danger); }
 .toast.toast-warning { border-left: 3px solid var(--warn); }
 .toast.toast-info { border-left: 3px solid var(--info); }
@@ -44,7 +44,7 @@
   margin-top: 1px;
 }
 
-.toast-success .toast-icon { color: var(--success); }
+.toast-success .toast-icon { color: var(--info); }
 .toast-error .toast-icon { color: var(--danger); }
 .toast-warning .toast-icon { color: var(--warn); }
 .toast-info .toast-icon { color: var(--info); }

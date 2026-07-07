@@ -5,6 +5,7 @@
 {% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -24,11 +25,8 @@
           <label for="name">Key name</label>
           <input type="text" id="name" name="name" placeholder="Production frontend" required>
         </div>
-        <button type="submit" class="btn tb-btn-primary">Generate →</button>
+        <button type="submit" class="btn tb-btn-primary">Generate</button>
       </form>
-      <p style="font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-3);">
-        The secret key will be shown <strong style="color: var(--warn);">only once</strong>. Copy it immediately.
-      </p>
     </div>
 
     {% if keys %}
@@ -37,7 +35,7 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Public Key</th>
+              <th>Key</th>
               <th>Status</th>
               <th>Last Used</th>
               <th>Created</th>
@@ -49,7 +47,10 @@
               <tr class="dash-table-row">
                 <td class="dash-table-title">{{ key.name }}</td>
                 <td class="dash-table-mono" style="font-size: 11px;">
-                  <code style="color: var(--text-dim);">{{ key.public_key }}</code>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <code style="color: var(--text-dim);" id="key-{{ key.id }}">{{ key.key }}</code>
+                    <button onclick="copyKey('{{ key.id }}')" class="btn-row" title="Copy to clipboard">Copy</button>
+                  </div>
                 </td>
                 <td>
                   {% if key.is_active %}
@@ -64,11 +65,9 @@
                 <td class="dash-table-mono">{{ key.created_at|timeago }}</td>
                 <td class="dash-table-action" style="display: flex; gap: var(--space-3); justify-content: flex-end;">
                   <form method="POST" action="{{ url_for('admin.api_key_toggle', key_id=key.id) }}" style="display: inline;">
-                    <button type="submit" style="background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim);">
-                      {{ 'Disable' if key.is_active else 'Enable' }}
-                    </button>
+                    <button type="submit" class="btn-row">{{ 'Disable' if key.is_active else 'Enable' }}</button>
                   </form>
-                  <a href="#" onclick="confirmDelete('{{ key.id }}', '{{ key.name }}', '{{ url_for('admin.api_key_delete', key_id=key.id) }}'); return false;">Delete →</a>
+                  <a href="#" onclick="confirmDelete('{{ key.id }}', '{{ key.name }}', '{{ url_for('admin.api_key_delete', key_id=key.id) }}'); return false;" class="btn-row danger">Delete</a>
                 </td>
               </tr>
             {% endfor %}
@@ -120,5 +119,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape') closeModal();
   });
 });
+
+function copyKey(keyId) {
+  var keyText = document.getElementById('key-' + keyId).textContent;
+  navigator.clipboard.writeText(keyText).then(function() {
+    var btn = event.target;
+    var original = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(function() { btn.textContent = original; }, 1000);
+  });
+}
 </script>
 {% endblock %}

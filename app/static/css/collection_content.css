@@ -75,7 +75,7 @@
   }
 
   .status-dot.published {
-    background: var(--success);
+    background: var(--info);
   }
   .status-dot.draft {
     background: var(--text-dim);

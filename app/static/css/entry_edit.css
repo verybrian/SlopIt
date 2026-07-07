@@ -52,7 +52,7 @@
   border-radius: 50%;
 }
 
-.status-dot.published { background: var(--success); }
+.status-dot.published { background: var(--info); }
 .status-dot.draft { background: var(--text-dim); }
 
 .publish-actions {

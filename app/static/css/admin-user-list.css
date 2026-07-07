@@ -99,7 +99,7 @@
   display: inline-block;
 }
 
-.dash-badge--published { color: var(--success); }
+.dash-badge--published { color: var(--info); }
 .dash-badge--draft     { color: var(--text-dim); }
 
 .dash-section {

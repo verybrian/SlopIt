@@ -199,7 +199,7 @@
   border: 1px solid currentColor;
 }
 
-.dash-badge--published { color: var(--success); }
+.dash-badge--published { color: var(--info); }
 .dash-badge--draft     { color: var(--text-dim); }
 .dash-badge--archived  { color: var(--warn); }
 
@@ -249,7 +249,7 @@
   flex-shrink: 0;
 }
 
-.activity-dot--publish { background: var(--success); }
+.activity-dot--publish { background: var(--info); }
 .activity-dot--create  { background: var(--accent); }
 .activity-dot--upload  { background: var(--info); }
 .activity-dot--edit    { background: var(--text-dim); }
