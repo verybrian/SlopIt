@@ -35,8 +35,12 @@
               <tr class="dash-table-row">
                 <td>
                   <div style="display: flex; align-items: center; gap: var(--space-3);">
-                    <div class="sb-avatar" style="width: 28px; height: 28px; font-size: 10px;">
-                      {{ user.username[:2].upper() }}
+                    <div class="sb-avatar" style="width: 28px; height: 28px; font-size: 10px; overflow: hidden;">
+                      {% if user.avatar_url %}
+                        <img src="{{ user.avatar_url }}" alt="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                      {% else %}
+                        {{ user.username[:2].upper() }}
+                      {% endif %}
                     </div>
                     <span class="dash-table-title">{{ user.username }}</span>
                   </div>
