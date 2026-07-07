@@ -1,0 +1,38 @@
+<script>
+function showToast(category, message) {
+  var container = document.getElementById('toastContainer');
+  
+  var icons = {
+    'success': '✓',
+    'error': '✕',
+    'warning': '!',
+    'info': 'i'
+  };
+  
+  var toast = document.createElement('div');
+  toast.className = 'toast toast-' + (category || 'info');
+  toast.innerHTML = 
+    '<span class="toast-icon">' + (icons[category] || 'i') + '</span>' +
+    '<span class="toast-body">' + message + '</span>' +
+    '<button class="toast-close" onclick="dismissToast(this.parentElement)">×</button>';
+  
+  container.appendChild(toast);
+  
+  requestAnimationFrame(function() {
+    toast.classList.add('show');
+  });
+  
+  setTimeout(function() {
+    dismissToast(toast);
+  }, 4000);
+}
+
+function dismissToast(toast) {
+  toast.classList.remove('show');
+  setTimeout(function() {
+    if (toast.parentElement) {
+      toast.remove();
+    }
+  }, 300);
+}
+</script>

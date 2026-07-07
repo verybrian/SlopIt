@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/toast.css') }}">
   {% block styles %}{% endblock %}
 </head>
 <body>
@@ -35,19 +36,26 @@
     </ul>
   </nav>
 
+  <div class="toast-container" id="toastContainer"></div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="alerts">
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          {% for category, message in messages %}
+            showToast('{{ category }}', '{{ message|escape }}');
+          {% endfor %}
+        });
+      </script>
     {% endif %}
   {% endwith %}
 
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  {% include '_toast_js.html' %}
+  {% block scripts %}{% endblock %}
 
 </body>
 </html>
