@@ -1,26 +1,22 @@
-{% extends "admin/base.html" %} {% block title %}{{ collection.label }} — {{
-site_name }}{% endblock %} {% block breadcrumb %}{{ collection.label }}{%
-endblock %} {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}"/>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/collection_content.css') }}"/>
-{% endblock %} {% block topbar_actions %}
+{% extends "admin/base.html" %}
+{% block title %}{{ collection.label }} — {{ site_name }}{% endblock %}
+{% block breadcrumb %}{{ collection.label }}{% endblock %}
 
-<a href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}" class="btn tb-btn-primary">
-  + New {{ collection.label.rstrip('s') }}
-</a>
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-user-list.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/collection_content.css') }}">
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}" class="btn tb-btn-primary">
+    + New {{ collection.label.rstrip('s') }}
+  </a>
 {% endblock %}
 
 {% block content %}
 <div class="content-header">
   <div class="content-header-left">
-    <h1
-      style="
-        font-size: var(--text-lg);
-        font-weight: 400;
-        color: var(--text);
-        margin: 0;
-      "
-    >
+    <h1 style="font-size: var(--text-lg); font-weight: 400; color: var(--text); margin: 0;">
       {{ collection.label }}
     </h1>
     <span class="content-count">{{ entries|length }} total</span>
@@ -28,58 +24,81 @@ endblock %} {% block styles %}
 </div>
 
 {% if entries %}
-<div class="entries-table">
-  {% for entry in entries %}
-  <div class="entry-row">
-    <div class="entry-info">
-      <div
-        class="entry-title {{ 'untitled' if not entry.get_value(title_field.name if title_field else '') }}"
-      >
-        {{ entry.get_value(title_field.name if title_field else '') or
-        'Untitled' }}
+  <div class="entries-table">
+    {% for entry in entries %}
+      <div class="entry-row">
+        <div class="entry-info">
+          <div class="entry-title {{ 'untitled' if not entry.get_value(title_field.name if title_field else '') }}">
+            {{ entry.get_value(title_field.name if title_field else '') or 'Untitled' }}
+          </div>
+          <div class="entry-meta">
+            <span class="status-dot {{ entry.status }}"></span>
+            <span>{{ entry.status }}</span>
+            <span>·</span>
+            <span>{{ entry.updated_at|timeago }}</span>
+          </div>
+        </div>
+        <div class="entry-actions">
+          <a href="{{ url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id) }}" class="btn-row">Edit</a>
+          <button onclick="confirmDelete('{{ entry.id }}', '{{ entry.get_value(title_field.name if title_field else '') or 'Untitled' }}', '{{ url_for('admin.entry_delete', collection_id=collection.id, entry_id=entry.id) }}')" class="btn-row danger">Delete</button>
+        </div>
       </div>
-      <div class="entry-meta">
-        <span class="status-dot {{ entry.status }}"></span>
-        <span>{{ entry.status }}</span>
-        <span>·</span>
-        <span>{{ entry.updated_at|timeago }}</span>
-      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="entries-table">
+    <div class="empty-state">
+      <div class="empty-state-icon">📄</div>
+      <p class="empty-state-text">No {{ collection.label.lower() }} yet</p>
+      <p class="empty-state-hint">Create your first {{ collection.label.lower().rstrip('s') }} to get started.</p>
+      <a href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}" class="btn btn-primary">
+        + Create {{ collection.label.rstrip('s') }}
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+{% if collection.collection_type == 'list' and child_collection %}
+  <div class="dash-section" style="margin-top: var(--space-6);">
+    <div class="dash-section-head">
+      <span class="dash-section-label">{{ child_collection.label }}s</span>
+      <span class="dash-section-link">{{ child_collection.entries.count() }} total</span>
     </div>
 
-    <div class="entry-actions">
-      <a
-        href="{{ url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id) }}"
-        class="btn-row"
-      >
-        Edit
-      </a>
-      <button
-        onclick="confirmDelete('{{ entry.id }}', '{{ entry.get_value(title_field.name if title_field else '') or 'Untitled' }}', '{{ url_for('admin.entry_delete', collection_id=collection.id, entry_id=entry.id) }}')"
-        class="btn-row danger"
-      >
-        Delete
-      </button>
-    </div>
+    {% set child_entries = child_collection.entries.order_by(child_collection.entries.updated_at.desc()).all() %}
+    {% if child_entries %}
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in entries %}
+              <tr class="dash-table-row">
+                <td class="dash-table-title">{{ entry.get_value(title_field.name if title_field else '') or 'Untitled' }}</td>
+                <td class="dash-table-mono">{{ entry.updated_at|timeago }}</td>
+                <td class="dash-table-action" style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+                  <a href="{{ url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id) }}" class="btn-row">Edit</a>
+                  <button onclick="confirmDelete('{{ entry.id }}', '{{ entry.get_value(title_field.name if title_field else '') or 'Untitled' }}', '{{ url_for('admin.entry_delete', collection_id=collection.id, entry_id=entry.id) }}')" class="btn-row danger">Delete</button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="dash-empty">
+        <p class="dash-empty-text">No {{ child_collection.label.lower() }}s yet.</p>
+        <p class="dash-empty-hint">
+          <a href="{{ url_for('admin.entry_edit', collection_id=child_collection.id) }}">Add your first one</a>.
+        </p>
+      </div>
+    {% endif %}
   </div>
-  {% endfor %}
-</div>
-{% else %}
-<div class="entries-table">
-  <div class="empty-state">
-    <div class="empty-state-icon">📄</div>
-    <p class="empty-state-text">No {{ collection.label.lower() }} yet</p>
-    <p class="empty-state-hint">
-      Create your first {{ collection.label.lower().rstrip('s') }} to get
-      started.
-    </p>
-    <a
-      href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}"
-      class="btn btn-primary"
-    >
-      + Create {{ collection.label.rstrip('s') }}
-    </a>
-  </div>
-</div>
 {% endif %}
 
 <div class="modal" id="deleteModal">
@@ -87,32 +106,33 @@ endblock %} {% block styles %}
   <div class="modal-content">
     <h3 class="modal-title">Delete entry</h3>
     <p class="modal-text">
-      Are you sure you want to delete "<strong id="deleteEntryTitle"></strong>"?
-      This cannot be undone.
+      Are you sure you want to delete "<strong id="deleteEntryTitle"></strong>"? This cannot be undone.
     </p>
     <div class="modal-actions">
       <button onclick="closeModal()" class="btn btn-ghost">Cancel</button>
-      <form id="deleteForm" method="POST" style="display: inline">
+      <form id="deleteForm" method="POST" style="display: inline;">
         <button type="submit" class="btn btn-danger">Delete</button>
       </form>
     </div>
   </div>
 </div>
 
-{% endblock %} {% block scripts %}
+{% endblock %}
+
+{% block scripts %}
 <script>
-  function confirmDelete(entryId, title, deleteUrl) {
-    document.getElementById("deleteEntryTitle").textContent = title;
-    document.getElementById("deleteForm").action = deleteUrl;
-    document.getElementById("deleteModal").classList.add("open");
-  }
+function confirmDelete(entryId, title, deleteUrl) {
+  document.getElementById("deleteEntryTitle").textContent = title;
+  document.getElementById("deleteForm").action = deleteUrl;
+  document.getElementById("deleteModal").classList.add("open");
+}
 
-  function closeModal() {
-    document.getElementById("deleteModal").classList.remove("open");
-  }
+function closeModal() {
+  document.getElementById("deleteModal").classList.remove("open");
+}
 
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeModal();
-  });
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") closeModal();
+});
 </script>
 {% endblock %}

@@ -11,7 +11,6 @@ class FieldType(enum.Enum):
     BOOLEAN = "boolean"
     SELECT = "select"
     NUMBER = "number"
-    REPEATER = "repeater"
 
 class Field(db.Model):
     __tablename__ = 'fields'

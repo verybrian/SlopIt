@@ -1,140 +1,119 @@
 {% extends "admin/base.html" %}
-{% block title %}Dashboard — SlopIt{% endblock %}
+{% block title %}Dashboard — {{ site_name }}{% endblock %}
 {% block breadcrumb %}Dashboard{% endblock %}
 
 {% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
 
-{% block topbar_actions %}
-  <a href="#" class="btn tb-btn-ghost">
-    <i class="ti ti-bell" aria-hidden="true"></i>
-  </a>
-  <a href="#" class="btn tb-btn-primary">+ New post</a>
-{% endblock %}
-
 {% block content %}
-
-  <!-- Stats row -->
-  <div class="dash-stats">
-    <div class="stat-card">
-      <div class="stat-label">Pages</div>
-      <div class="stat-value">{{ stats.pages_total }}</div>
-      <div class="stat-sub">
-        <span class="stat-sub--accent">{{ stats.pages_published }} published</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Posts</div>
-      <div class="stat-value">{{ stats.posts_total }}</div>
-      <div class="stat-sub">
-        <span class="stat-sub--accent">{{ stats.posts_published }} published</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Media</div>
-      <div class="stat-value">{{ stats.media_total }}</div>
-      <div class="stat-sub">files uploaded</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Users</div>
-      <div class="stat-value">{{ stats.users_total }}</div>
-      <div class="stat-sub">admin + staff</div>
-    </div>
+  <div style="margin-bottom: var(--space-6);">
+    <h1 style="font-size: var(--text-xl); font-weight: 400; color: var(--text); margin: 0 0 var(--space-1);">
+      {{ site_name }}
+    </h1>
+    <p style="font-size: var(--text-sm); color: var(--text-dim); margin: 0;">
+      {% if is_admin %}
+        Manage your content, users, and system settings.
+      {% else %}
+        Manage your content and profile.
+      {% endif %}
+    </p>
   </div>
 
-  <!-- Recent posts table -->
-  <div class="dash-section">
-    <div class="dash-section-head">
-      <span class="dash-section-label">Recent posts</span>
-      <a href="#" class="dash-section-link">View all →</a>
+  {% if is_admin %}
+    <div class="dash-stats">
+      <div class="stat-card">
+        <div class="stat-label">Media</div>
+        <div class="stat-value">{{ stats.media_total }}</div>
+        <div class="stat-sub">files uploaded</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Users</div>
+        <div class="stat-value">{{ stats.users_total }}</div>
+        <div class="stat-sub">active accounts</div>
+      </div>
     </div>
+  {% endif %}
 
-    {% if recent_posts %}
-      <div class="dash-table-wrap">
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Author</th>
-              <th>Updated</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for post in recent_posts %}
-              <tr class="dash-table-row">
-                <td class="dash-table-title">{{ post.title }}</td>
-                <td>
-                  <span class="dash-badge dash-badge--{{ post.status }}">
-                    {{ post.status }}
-                  </span>
-                </td>
-                <td class="dash-table-mono">{{ post.author.username }}</td>
-                <td class="dash-table-mono">{{ post.updated_at | timeago }}</td>
-                <td class="dash-table-action">
-                  <a href="#">Edit →</a>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="dash-empty">
-        <p class="dash-empty-text">No posts yet.</p>
-        <p class="dash-empty-hint">Create your first post to get started.</p>
-      </div>
-    {% endif %}
+  <div class="collections-grid">
+    {% for col in collections %}
+      <a href="{{ url_for('admin.collection_edit', collection_id=col.id) }}" class="collection-card">
+        <div class="collection-card-label">Collection</div>
+        <div class="collection-card-name">{{ col.label }}</div>
+        <div class="collection-card-kind">{{ col.kind.value }}</div>
+      </a>
+    {% endfor %}
   </div>
 
-  <!-- Bottom two-col -->
   <div class="dash-two-col">
-
-    <!-- Activity feed -->
     <div class="dash-panel">
-      <div class="dash-panel-title">Recent activity</div>
-      {% if activity %}
-        {% for item in activity %}
-          <div class="activity-item">
-            <div class="activity-dot activity-dot--{{ item.type }}"></div>
-            <div>
-              <div class="activity-text">
-                <strong>{{ item.actor }}</strong> {{ item.action }}
+      <div class="dash-panel-title">Recent updates</div>
+      {% if recent_items %}
+        {% for item in recent_items %}
+          <a href="{{ item.edit_url }}" class="activity-item" style="text-decoration: none;">
+            <div class="activity-dot activity-dot--edit"></div>
+            <div style="flex: 1; min-width: 0;">
+              <div class="activity-text" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ item.title }}
               </div>
-              <div class="activity-time">{{ item.timestamp | timeago }}</div>
+              <div style="display: flex; gap: var(--space-2); align-items: center;">
+                <span class="activity-time">{{ item.updated_at|timeago }}</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);">in {{ item.collection_label }}</span>
+              </div>
             </div>
-          </div>
+            <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim);">→</span>
+          </a>
         {% endfor %}
       {% else %}
-        <p class="dash-empty-hint">No activity yet.</p>
+        <p class="dash-empty-hint">No content yet. Start by editing a collection.</p>
       {% endif %}
     </div>
 
-    <!-- Collections -->
-    <div class="dash-panel">
-      <div class="dash-panel-title">Collections</div>
-      <div class="dash-col-item">
-        <span class="dash-col-name">Pages</span>
-        <div class="dash-col-right">
-          <span class="dash-col-count">{{ stats.pages_total }} entries</span>
-          <span class="dash-col-arrow">→</span>
-        </div>
+    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+      
+      <div class="dash-panel">
+        <div class="dash-panel-title">Activity</div>
+        {% if activity %}
+          {% for item in activity %}
+            <div class="activity-item">
+              <div class="activity-dot activity-dot--{{ item.type }}"></div>
+              <div>
+                <div class="activity-text">
+                  <strong>{{ item.actor }}</strong> {{ item.action }}
+                </div>
+                <div class="activity-time">{{ item.timestamp|timeago }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="dash-empty-hint">No activity yet.</p>
+        {% endif %}
       </div>
-      <div class="dash-col-item">
-        <span class="dash-col-name">Posts</span>
-        <div class="dash-col-right">
-          <span class="dash-col-count">{{ stats.posts_total }} entries</span>
+
+      <div class="dash-panel">
+        <div class="dash-panel-title">Quick links</div>
+        <a href="{{ url_for('admin.media_library') }}" class="dash-col-item" style="text-decoration: none;">
+          <span class="dash-col-name">Media library</span>
           <span class="dash-col-arrow">→</span>
-        </div>
-      </div>
-      <div class="dash-col-item">
-        <span class="dash-col-name">Media</span>
-        <div class="dash-col-right">
-          <span class="dash-col-count">{{ stats.media_total }} files</span>
+        </a>
+        <a href="{{ url_for('admin.settings') }}" class="dash-col-item" style="text-decoration: none;">
+          <span class="dash-col-name">Profile settings</span>
           <span class="dash-col-arrow">→</span>
-        </div>
+        </a>
+        {% if is_admin %}
+          <a href="{{ url_for('admin.collections') }}" class="dash-col-item" style="text-decoration: none;">
+            <span class="dash-col-name">Manage collections</span>
+            <span class="dash-col-arrow">→</span>
+          </a>
+          <a href="{{ url_for('admin.user_list') }}" class="dash-col-item" style="text-decoration: none;">
+            <span class="dash-col-name">Manage users</span>
+            <span class="dash-col-arrow">→</span>
+          </a>
+          <a href="{{ url_for('admin.api_keys') }}" class="dash-col-item" style="text-decoration: none;">
+            <span class="dash-col-name">API keys</span>
+            <span class="dash-col-arrow">→</span>
+          </a>
+        {% endif %}
       </div>
     </div>
 

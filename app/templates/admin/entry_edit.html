@@ -1,9 +1,16 @@
 {% extends "admin/base.html" %}
 {% block title %}{{ 'Edit' if entry else 'New' }} {{ collection.label }} — {{ site_name }}{% endblock %}
+
 {% block breadcrumb %}
-  <a href="{{ url_for('admin.collections') }}" style="color: var(--text-dim); text-decoration: none;">Collections</a> / 
-  <a href="{{ url_for('admin.collection_edit', collection_id=collection.id) }}" style="color: var(--text-dim); text-decoration: none;">{{ collection.label }}</a> / 
-  {{ 'Edit' if entry else 'New' }} entry
+  {% if collection.kind.value == 'section' %}
+    {{ collection.label }}
+  {% elif collection.kind.value == 'list' %}
+    <a href="{{ url_for('admin.collection_edit', collection_id=collection.id) }}" style="color: var(--text-dim); text-decoration: none;">{{ collection.label }}</a> / 
+    {{ 'Edit' if entry else 'New' }} item
+  {% else %}
+    <a href="{{ url_for('admin.collection_edit', collection_id=collection.id) }}" style="color: var(--text-dim); text-decoration: none;">{{ collection.label }}</a> / 
+    {{ 'Edit' if entry else 'New' }} entry
+  {% endif %}
 {% endblock %}
 
 {% block styles %}
@@ -13,103 +20,54 @@
 
 {% block content %}
 
-<form method="POST" action="{{ url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id) if entry else url_for('admin.entry_edit', collection_id=collection.id) }}" class="entry-layout">
+<form method="POST" action="{{ url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id) if entry else url_for('admin.entry_edit', collection_id=collection.id) }}" enctype="multipart/form-data" class="entry-layout">
   
   <div class="entry-form">
     {% if fields %}
       {% for field in fields %}
 
         {% if field.name == 'author' %}
-            <div class="field">
+          <div class="field">
             <label>{{ field.label }}</label>
             <input type="text" value="{{ current_user.display_name or current_user.username }}" disabled 
-                    style="opacity: 0.6; cursor: not-allowed;">
+                  style="opacity: 0.6; cursor: not-allowed;">
             <span style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">
-                Auto-set from your profile. Change your display name in <a href="{{ url_for('admin.settings') }}" style="color: var(--accent);">Settings</a>.
+              Auto-set from your profile. Change in <a href="{{ url_for('admin.settings') }}" style="color: var(--accent);">Settings</a>.
             </span>
-            </div>
-        
-        {% elif field.field_type.value == 'repeater' %}
-          <div class="field">
-            <label class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
-            
-            {% set entry_value = entry.values.filter_by(field_id=field.id).first() if entry else None %}
-            {% set repeater_items = entry_value.repeater_items.order_by('order').all() if entry_value else [] %}
-            
-            {% if repeater_items %}
-              {% for item in repeater_items %}
-                <div class="repeater-item">
-                  <div class="repeater-item-header">
-                    <span>{{ item.block.label }}</span>
-                    <span style="color: var(--text-dim);">#{{ loop.index }}</span>
-                  </div>
-                  <div class="repeater-item-body">
-                    {% for sf in item.block.sub_fields.order_by('order') %}
-                      {% set item_value = item.values.filter_by(sub_field_id=sf.id).first() %}
-                      <div class="field">
-                        <label>{{ sf.label }}{% if sf.required %} *{% endif %}</label>
-                        {% if sf.field_type.value == 'textarea' or sf.field_type.value == 'rich_text' %}
-                          <textarea name="repeater_{{ field.name }}_{{ item.id }}_{{ sf.name }}" rows="3" placeholder="{{ sf.label }}">{{ item_value.value if item_value else (sf.default_value or '') }}</textarea>
-                        {% elif sf.field_type.value == 'select' and sf.options %}
-                          <select name="repeater_{{ field.name }}_{{ item.id }}_{{ sf.name }}">
-                            <option value="">— Select —</option>
-                            {% for opt in sf.options %}
-                              <option value="{{ opt }}" {% if item_value and item_value.value == opt %}selected{% endif %}>{{ opt }}</option>
-                            {% endfor %}
-                          </select>
-                        {% elif sf.field_type.value == 'image' %}
-                          <input type="url" name="repeater_{{ field.name }}_{{ item.id }}_{{ sf.name }}" value="{{ item_value.value if item_value else (sf.default_value or '') }}" placeholder="https://s3.../image.jpg">
-                        {% else %}
-                          <input type="{{ 'number' if sf.field_type.value == 'number' else 'text' }}" name="repeater_{{ field.name }}_{{ item.id }}_{{ sf.name }}" value="{{ item_value.value if item_value else (sf.default_value or '') }}" placeholder="{{ sf.label }}">
-                        {% endif %}
-                      </div>
-                    {% endfor %}
-                  </div>
-                </div>
-              {% endfor %}
-            {% else %}
-              <div class="repeater-placeholder">
-                <p>No sections added yet.</p>
-                <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim);">
-                  Section management coming soon.
-                </span>
-              </div>
-            {% endif %}
           </div>
-          
+
         {% elif field.field_type.value == 'text' %}
           <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
             <input type="text" id="{{ field.name }}" name="{{ field.name }}" 
-                   value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}"
-                   placeholder="{{ field.label }}" {{ 'required' if field.required }}>
+                  value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}"
+                  placeholder="{{ field.label }}" {{ 'required' if field.required }}>
           </div>
-          
+
         {% elif field.field_type.value == 'textarea' %}
           <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
             <textarea id="{{ field.name }}" name="{{ field.name }}" rows="5" 
                       placeholder="{{ field.label }}" {{ 'required' if field.required }}>{{ entry.get_value(field.name) if entry else (field.default_value or '') }}</textarea>
           </div>
-          
+
         {% elif field.field_type.value == 'rich_text' %}
           <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
             <textarea id="{{ field.name }}" name="{{ field.name }}" rows="12" 
-                      placeholder="Write your content here..." 
                       style="font-family: var(--font-mono); font-size: var(--text-sm);"
                       {{ 'required' if field.required }}>{{ entry.get_value(field.name) if entry else (field.default_value or '') }}</textarea>
-            <span style="font-size: var(--text-xs); color: var(--text-dim);">HTML supported. Rich text editor coming soon.</span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim);">HTML supported.</span>
           </div>
-          
+
         {% elif field.field_type.value == 'image' %}
-        <div class="field">
+          <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
             {% with field_name=field.name, current_value=entry.get_value(field.name) if entry else '' %}
-            {% include 'admin/_image_field.html' %}
+              {% include 'admin/_image_field.html' %}
             {% endwith %}
-        </div>
-          
+          </div>
+
         {% elif field.field_type.value == 'select' %}
           <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
@@ -123,31 +81,31 @@
               {% endif %}
             </select>
           </div>
-          
+
         {% elif field.field_type.value == 'date' %}
           <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
             <input type="date" id="{{ field.name }}" name="{{ field.name }}" 
-                   value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}"
-                   {{ 'required' if field.required }}>
+                  value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}"
+                  {{ 'required' if field.required }}>
           </div>
-          
+
         {% elif field.field_type.value == 'boolean' %}
           <div class="field field--inline">
             <input type="checkbox" id="{{ field.name }}" name="{{ field.name }}" 
-                   {% if (entry.get_value(field.name) if entry else '') == 'on' %}checked{% endif %}>
+                  {% if (entry.get_value(field.name) if entry else '') == 'on' %}checked{% endif %}>
             <label for="{{ field.name }}">{{ field.label }}</label>
           </div>
-          
+
         {% elif field.field_type.value == 'number' %}
           <div class="field">
             <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
             <input type="number" id="{{ field.name }}" name="{{ field.name }}" 
-                   value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}"
-                   placeholder="0" {{ 'required' if field.required }}>
+                  value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}"
+                  placeholder="0" {{ 'required' if field.required }}>
           </div>
+
         {% endif %}
-        
       {% endfor %}
     {% else %}
       <div class="dash-empty">
@@ -159,28 +117,17 @@
   
   <div class="entry-sidebar">
     <div class="sidebar-card">
-      <h3 class="sidebar-card-title">Status</h3>
-      <div class="status-indicator">
-        <span class="status-dot {{ entry.status if entry else 'draft' }}"></span>
-        <span style="text-transform: uppercase;">{{ entry.status if entry else 'Draft' }}</span>
-      </div>
-      {% if entry and entry.published_at %}
-        <div style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2);">
-          Published {{ entry.published_at|timeago }}
-        </div>
-      {% endif %}
-    </div>
-    
-    <div class="sidebar-card">
       <h3 class="sidebar-card-title">Actions</h3>
       <div class="publish-actions">
-        <button type="submit" name="_action" value="save" class="btn btn-ghost" style="width: 100%; justify-content: center;">
-          Save draft
-        </button>
-        <button type="submit" name="_action" value="publish" class="btn btn-primary" style="width: 100%; justify-content: center;">
-          Publish
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+          Save
         </button>
       </div>
+      {% if collection.kind.value == 'list' %}
+        <a href="{{ url_for('admin.collection_edit', collection_id=collection.id) }}" class="btn btn-ghost" style="width: 100%; justify-content: center; margin-top: var(--space-2);">
+          ← Back to {{ collection.label }}
+        </a>
+      {% endif %}
     </div>
     
     {% if entry %}
@@ -214,58 +161,48 @@
   </div>
 </div>
 
+{% endblock %}
+
 {% block scripts %}
 <script>
 var currentImageField = null;
 var selectedMediaId = null;
+var selectedMediaUrl = null;
 
 function openMediaLibrary(fieldName) {
   currentImageField = fieldName;
   selectedMediaId = null;
+  selectedMediaUrl = null;
   document.getElementById('mediaModal').classList.add('open');
   loadMediaImages();
 }
 
 function closeMediaLibrary() {
   document.getElementById('mediaModal').classList.remove('open');
-  currentImageField = null;
-  selectedMediaId = null;
 }
 
 function loadMediaImages() {
   var grid = document.getElementById('mediaGrid');
   grid.innerHTML = '<p style="color: var(--text-dim); font-size: var(--text-sm); padding: var(--space-4);">Loading...</p>';
-  
   fetch('/admin/media?type=image')
-    .then(response => response.text())
+    .then(r => r.text())
     .then(html => {
-      var parser = new DOMParser();
-      var doc = parser.parseFromString(html, 'text/html');
-      var images = doc.querySelectorAll('.media-card');
-      
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var cards = doc.querySelectorAll('.media-card');
       grid.innerHTML = '';
-      
-      if (images.length === 0) {
-        grid.innerHTML = '<p style="color: var(--text-dim); font-size: var(--text-sm); padding: var(--space-4);">No images in library.</p>';
-        return;
-      }
-      
-      images.forEach(function(card) {
+      if (!cards.length) { grid.innerHTML = '<p style="color: var(--text-dim); padding: var(--space-4);">No images.</p>'; return; }
+      cards.forEach(function(card) {
         var img = card.querySelector('img');
         var url = img ? img.src : '';
-        var mediaId = card.getAttribute('data-media-id') || '';
-        
+        var mid = card.getAttribute('data-media-id') || '';
         if (url) {
-          var div = document.createElement('div');
-          div.className = 'media-grid-item';
-          div.innerHTML = '<img src="' + url + '" loading="lazy">';
-          div.onclick = function() {
+          var d = document.createElement('div'); d.className = 'media-grid-item';
+          d.innerHTML = '<img src="' + url + '" loading="lazy">';
+          d.onclick = function() {
             document.querySelectorAll('.media-grid-item').forEach(function(el) { el.classList.remove('selected'); });
-            div.classList.add('selected');
-            selectedMediaId = mediaId;
-            selectedMediaUrl = url;
+            d.classList.add('selected'); selectedMediaId = mid; selectedMediaUrl = url;
           };
-          grid.appendChild(div);
+          grid.appendChild(d);
         }
       });
     });
@@ -273,29 +210,21 @@ function loadMediaImages() {
 
 function selectMediaImage() {
   if (!currentImageField || !selectedMediaUrl) return;
-  
   document.getElementById('input_' + currentImageField).value = selectedMediaUrl;
   document.getElementById('media_id_' + currentImageField).value = selectedMediaId || '';
-  
   var preview = document.getElementById('preview_' + currentImageField);
-  preview.innerHTML = '<img src="' + selectedMediaUrl + '" id="img_' + currentImageField + '">';
-  preview.classList.add('has-image');
-  
+  if (preview) { preview.innerHTML = '<img src="' + selectedMediaUrl + '">'; preview.classList.add('has-image'); }
   closeMediaLibrary();
 }
 
 function previewUpload(input, fieldName) {
-  var file = input.files[0];
-  if (!file) return;
-  
+  if (!input.files[0]) return;
   var reader = new FileReader();
   reader.onload = function(e) {
     var preview = document.getElementById('preview_' + fieldName);
-    preview.innerHTML = '<img src="' + e.target.result + '" id="img_' + fieldName + '">';
-    preview.classList.add('has-image');
+    if (preview) { preview.innerHTML = '<img src="' + e.target.result + '">'; preview.classList.add('has-image'); }
   };
-  reader.readAsDataURL(file);
-  
+  reader.readAsDataURL(input.files[0]);
   document.getElementById('media_id_' + fieldName).value = '';
 }
 
@@ -303,13 +232,9 @@ function clearImage(fieldName) {
   document.getElementById('input_' + fieldName).value = '';
   document.getElementById('media_id_' + fieldName).value = '';
   var preview = document.getElementById('preview_' + fieldName);
-  preview.innerHTML = '<span class="image-placeholder-text">No image selected</span>';
-  preview.classList.remove('has-image');
-  
-  var fileInput = document.querySelector('input[name="' + fieldName + '_file"]');
-  if (fileInput) fileInput.value = '';
+  if (preview) { preview.innerHTML = '<span class="image-placeholder-text">No image selected</span>'; preview.classList.remove('has-image'); }
+  var fi = document.querySelector('input[name="' + fieldName + '_file"]');
+  if (fi) fi.value = '';
 }
 </script>
-{% endblock %}
-
 {% endblock %}

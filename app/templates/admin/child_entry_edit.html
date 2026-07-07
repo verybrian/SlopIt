@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Edit' if entry else 'New' }} {{ collection.label }} — {{ site_name }}{% endblock %}
+{% block breadcrumb %}
+  <a href="{{ url_for('admin.collection_edit', collection_id=parent_collection.id) }}" style="color: var(--text-dim); text-decoration: none;">{{ parent_collection.label }}</a> / 
+  {{ 'Edit' if entry else 'New' }} {{ collection.label }}
+{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 600px;">
+  <h1 style="font-size: var(--text-lg); font-weight: 400; color: var(--text); margin-bottom: var(--space-5);">
+    {{ 'Edit' if entry else 'New' }} {{ collection.label }}
+  </h1>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% for field in fields %}
+      {% if field.name == 'author' %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          <input type="text" value="{{ current_user.display_name or current_user.username }}" disabled style="opacity: 0.6;">
+        </div>
+      {% elif field.field_type.value == 'text' %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          <input type="text" name="{{ field.name }}" value="{{ entry.get_value(field.name) if entry else '' }}" placeholder="{{ field.label }}">
+        </div>
+      {% elif field.field_type.value == 'textarea' or field.field_type.value == 'rich_text' %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          <textarea name="{{ field.name }}" rows="5" placeholder="{{ field.label }}">{{ entry.get_value(field.name) if entry else '' }}</textarea>
+        </div>
+      {% elif field.field_type.value == 'image' %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          {% with field_name=field.name, current_value=entry.get_value(field.name) if entry else '' %}
+            {% include 'admin/_image_field.html' %}
+          {% endwith %}
+        </div>
+      {% elif field.field_type.value == 'select' %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          <select name="{{ field.name }}">
+            <option value="">— Select —</option>
+            {% if field.options %}
+              {% set cv = entry.get_value(field.name) if entry else '' %}
+              {% for opt in field.options %}
+                <option value="{{ opt }}" {% if cv == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+        </div>
+      {% else %}
+        <div class="field">
+          <label>{{ field.label }}</label>
+          <input type="text" name="{{ field.name }}" value="{{ entry.get_value(field.name) if entry else '' }}">
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <div style="display: flex; gap: var(--space-3); margin-top: var(--space-5);">
+      <button type="submit" name="_action" value="save" class="btn btn-ghost">Save</button>
+      <button type="submit" name="_action" value="publish" class="btn btn-primary">Publish</button>
+      <a href="{{ url_for('admin.collection_edit', collection_id=parent_collection.id) }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
