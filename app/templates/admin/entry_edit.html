@@ -68,19 +68,16 @@
             {% endwith %}
           </div>
 
-        {% elif field.field_type.value == 'select' %}
-          <div class="field">
-            <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
-            <select id="{{ field.name }}" name="{{ field.name }}" {{ 'required' if field.required }}>
-              <option value="">— Select —</option>
-              {% if field.options %}
-                {% set current_val = entry.get_value(field.name) if entry else '' %}
-                {% for opt in field.options %}
-                  <option value="{{ opt }}" {% if current_val == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
-              {% endif %}
-            </select>
-          </div>
+        {% elif field.field_type.value == 'select' and field.name == 'category' %}
+        <div class="field">
+          <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
+          <select id="{{ field.name }}" name="{{ field.name }}" data-current="{{ entry.get_value(field.name) if entry else '' }}" {{ 'required' if field.required }}>
+            <option value="">— Select —</option>
+          </select>
+          <span style="font-size: 10px; color: var(--text-dim);">
+            Manage categories in <a href="{{ url_for('admin.collection_edit', collection_id=cat_collection_id) }}" style="color: var(--accent);">Categories</a>.
+          </span>
+        </div>
 
         {% elif field.field_type.value == 'date' %}
           <div class="field">
@@ -236,5 +233,26 @@ function clearImage(fieldName) {
   var fi = document.querySelector('input[name="' + fieldName + '_file"]');
   if (fi) fi.value = '';
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  var categorySelect = document.getElementById('category');
+  if (categorySelect) {
+    fetch('/admin/api/categories')
+      .then(r => r.json())
+      .then(categories => {
+        categories.forEach(function(cat) {
+          var option = document.createElement('option');
+          option.value = cat.value;
+          option.textContent = cat.label;
+          categorySelect.appendChild(option);
+        });
+        
+        var currentVal = categorySelect.getAttribute('data-current');
+        if (currentVal) {
+          categorySelect.value = currentVal;
+        }
+      });
+  }
+});
 </script>
 {% endblock %}

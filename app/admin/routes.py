@@ -1,5 +1,5 @@
 import os
-from flask import render_template, redirect, url_for, flash, request, current_app
+from flask import render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user
 from app.admin import bp
 from app.models import Collection, CollectionKind, Entry, User
@@ -357,6 +357,25 @@ def media_delete(media_id):
     return redirect(url_for('admin.media_library'))
 
 
+@bp.route('/api/categories')
+@login_required
+def api_categories():
+    cat_collection = Collection.query.filter_by(name='categories').first()
+    if not cat_collection:
+        return jsonify([])
+    
+    entries = Entry.query.filter_by(collection_id=cat_collection.id).order_by(Entry.updated_at.desc()).all()
+    categories = []
+    for entry in entries:
+        categories.append({
+            'value': entry.get_value('title') or '',
+            'label': entry.get_value('title') or '',
+            'slug': entry.get_value('slug') or '',
+        })
+    
+    return jsonify(categories)
+
+
 @bp.route('/collections', methods=['GET', 'POST'])
 @login_required
 def collections():
@@ -597,7 +616,9 @@ def entry_edit(collection_id, entry_id=None):
             return redirect(url_for('admin.collection_edit', collection_id=collection.id))
         return redirect(url_for('admin.entry_edit', collection_id=collection.id, entry_id=entry.id))
 
-    return render_template('admin/entry_edit.html', collection=collection, entry=entry, fields=fields)
+    cat_collection = Collection.query.filter_by(name='categories').first()
+
+    return render_template('admin/entry_edit.html', collection=collection, entry=entry, fields=fields, cat_collection_id=cat_collection.id if cat_collection else None)
 
 
 @bp.route('/collections/<collection_id>/entries/<entry_id>/delete', methods=['POST'])

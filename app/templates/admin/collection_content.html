@@ -48,7 +48,6 @@
 {% else %}
   <div class="entries-table">
     <div class="empty-state">
-      <div class="empty-state-icon">📄</div>
       <p class="empty-state-text">No {{ collection.label.lower() }} yet</p>
       <p class="empty-state-hint">Create your first {{ collection.label.lower().rstrip('s') }} to get started.</p>
       <a href="{{ url_for('admin.entry_edit', collection_id=collection.id) }}" class="btn btn-primary">
