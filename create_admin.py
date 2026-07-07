@@ -8,6 +8,7 @@ app = create_app()
 with app.app_context():
     print("\n=== Create Admin User ===\n")
     
+    display_name = input("Display Name: ").strip()
     username = input("Username: ").strip()
     email = input("Email: ").strip()
     
@@ -24,6 +25,7 @@ with app.app_context():
         exit()
     
     admin = User(
+        display_name=display_name,
         username=username,
         email=email,
         role=UserRole.ADMIN

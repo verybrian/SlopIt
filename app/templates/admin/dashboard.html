@@ -9,7 +9,7 @@
 {% block content %}
   <div style="margin-bottom: var(--space-6);">
     <h1 style="font-size: var(--text-xl); font-weight: 400; color: var(--text); margin: 0 0 var(--space-1);">
-      {{ site_name }}
+      Welcome back, {{ current_user.display_name or current_user.username }}
     </h1>
     <p style="font-size: var(--text-sm); color: var(--text-dim); margin: 0;">
       {% if is_admin %}
