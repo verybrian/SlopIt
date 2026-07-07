@@ -91,7 +91,6 @@ def forgot_password():
         email = request.form.get('email', '').strip().lower()
         user = User.query.filter_by(email=email, is_active=True, is_deleted=False).first()
         
-        # Always show success even if email not found
         if user:
             token = generate_invite_token(email)
             user.reset_token = token
@@ -107,13 +106,26 @@ def forgot_password():
 @bp.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('admin.dashboard'))
     
     user = User.query.filter_by(reset_token=token, is_active=True, is_deleted=False).first()
     
-    if not user or (user.reset_expires_at and user.reset_expires_at < datetime.now(timezone.utc)):
+    now_utc = datetime.now(timezone.utc)
+    
+    if not user:
         flash('Invalid or expired reset link. Please request a new one.', 'error')
         return redirect(url_for('auth.forgot_password'))
+    
+    if user.reset_expires_at:
+        if user.reset_expires_at.tzinfo is None:
+            from datetime import timezone as tz
+            reset_expiry = user.reset_expires_at.replace(tzinfo=tz.utc)
+        else:
+            reset_expiry = user.reset_expires_at
+        
+        if reset_expiry < now_utc:
+            flash('This reset link has expired. Please request a new one.', 'error')
+            return redirect(url_for('auth.forgot_password'))
     
     if request.method == 'POST':
         password = request.form.get('password', '')
