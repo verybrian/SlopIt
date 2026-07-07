@@ -47,20 +47,27 @@ def generate_activity_feed():
     for entry in recent_entries:
         collection = Collection.query.get(entry.collection_id)
         entry_data = entry.to_dict()
-        title = entry_data.get('title', 'Untitled')
+        
+        title = (entry_data.get('title') or 
+                 entry_data.get('heading') or 
+                 entry_data.get('copyright') or 
+                 collection.label)
 
-        if entry.created_at == entry.updated_at:
-            action = f'created "{title}"'
+        time_diff = (entry.updated_at - entry.created_at).total_seconds()
+        
+        if time_diff < 5:
+            action = f'created'
             activity_type = 'create'
         else:
-            action = f'edited "{title}"'
+            action = f'updated'
             activity_type = 'edit'
 
         activities.append({
-            'actor': collection.label,
+            'actor': title,
             'action': action,
             'type': activity_type,
             'timestamp': entry.updated_at,
+            'collection': collection.label,
         })
 
     return activities

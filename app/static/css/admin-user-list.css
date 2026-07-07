@@ -198,6 +198,38 @@
   justify-content: flex-end;
 }
 
+.btn-row {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all var(--transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.btn-row:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.btn-row.danger {
+  color: var(--text-dim);
+}
+
+.btn-row.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 .btn.btn-danger {
   background: var(--danger);
   color: white;
