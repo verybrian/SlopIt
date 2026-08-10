@@ -1,0 +1,131 @@
+.trix-editor-wrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+
+.trix-editor-wrapper:focus-within {
+  border-color: var(--accent);
+}
+
+trix-toolbar {
+  background: #0a0a0a;
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+trix-toolbar .trix-button-group {
+  display: flex;
+  gap: 1px;
+  margin-right: var(--space-2);
+  border-right: 1px solid var(--border);
+  padding-right: var(--space-2);
+}
+
+trix-toolbar .trix-button-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+trix-toolbar .trix-button {
+  position: relative;
+  background: transparent;
+  background-image: none !important;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: all var(--transition);
+  line-height: 1;
+  height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0;
+  color: transparent;
+  text-indent: 0;
+}
+
+trix-toolbar .trix-button::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: var(--text-dim);
+  font-family: var(--font-sans), "Segoe UI Symbol", "Apple Symbol",
+               "Noto Sans Symbols", "Noto Sans Symbols 2", sans-serif;
+}
+
+trix-toolbar .trix-button:hover {
+  background: #1a1a1a;
+}
+
+trix-toolbar .trix-button:hover::before {
+  color: var(--text);
+}
+
+trix-toolbar .trix-button.trix-active {
+  background: #1a1a1a;
+  border-color: var(--border);
+}
+
+trix-toolbar .trix-button.trix-active::before {
+  color: var(--accent);
+}
+
+trix-toolbar .trix-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+trix-toolbar .trix-button--icon-bold::before { content: 'B'; font-weight: 700; }
+trix-toolbar .trix-button--icon-italic::before { content: 'I'; font-style: italic; }
+trix-toolbar .trix-button--icon-strike::before { content: 'S̶'; }
+trix-toolbar .trix-button--icon-link::before { content: '🔗'; font-size: 12px; }
+trix-toolbar .trix-button--icon-heading-1::before { content: 'H1'; font-size: 11px; font-weight: 700; }
+trix-toolbar .trix-button--icon-quote::before { content: '❝'; }
+trix-toolbar .trix-button--icon-code::before { content: '<>'; font-size: 11px; font-weight: 700; }
+trix-toolbar .trix-button--icon-bullet-list::before { content: '•≡'; font-size: 12px; }
+trix-toolbar .trix-button--icon-number-list::before { content: '1.'; font-size: 12px; font-weight: 700; }
+trix-toolbar .trix-button--icon-decrease-nesting-level::before { content: '↰'; }
+trix-toolbar .trix-button--icon-increase-nesting-level::before { content: '↱'; }
+trix-toolbar .trix-button--icon-undo::before { content: '↩'; }
+trix-toolbar .trix-button--icon-redo::before { content: '↪'; }
+
+trix-editor {
+  display: block;
+  background: var(--bg-surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 300;
+  line-height: 1.7;
+  padding: var(--space-4);
+  min-height: 200px;
+  outline: none;
+  overflow-y: auto;
+}
+
+trix-editor:empty::before {
+  content: attr(placeholder);
+  color: var(--text-dim);
+}
+
+trix-editor h1 { font-size: var(--text-2xl); font-weight: 500; margin: var(--space-4) 0 var(--space-2); color: var(--text); }
+trix-editor h2 { font-size: var(--text-xl); font-weight: 500; margin: var(--space-3) 0 var(--space-2); color: var(--text); }
+trix-editor h3 { font-size: var(--text-lg); font-weight: 500; margin: var(--space-3) 0 var(--space-1); color: var(--text); }
+trix-editor p { margin: 0 0 var(--space-3); }
+trix-editor a { color: var(--accent); }
+trix-editor strong { font-weight: 500; color: var(--text); }
+trix-editor blockquote { border-left: 2px solid var(--accent); padding-left: var(--space-4); color: var(--text-muted); margin: var(--space-3) 0; }
+trix-editor ul, trix-editor ol { padding-left: var(--space-5); margin: var(--space-3) 0; }
+trix-editor li { margin-bottom: var(--space-1); }
+trix-editor pre { background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); overflow-x: auto; }

@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-shell.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/toast.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trix@2.1.0/dist/trix.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
   {% block styles %}{% endblock %}
 </head>
 {% block scripts %}{% endblock %}
@@ -137,6 +139,8 @@
 
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/trix@2.1.0/dist/trix.umd.min.js"></script>
 
 </body>
 </html>

@@ -52,13 +52,11 @@
           </div>
 
         {% elif field.field_type.value == 'rich_text' %}
-          <div class="field">
-            <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
-            <textarea id="{{ field.name }}" name="{{ field.name }}" rows="12" 
-                      style="font-family: var(--font-mono); font-size: var(--text-sm);"
-                      {{ 'required' if field.required }}>{{ entry.get_value(field.name) if entry else (field.default_value or '') }}</textarea>
-            <span style="font-size: var(--text-xs); color: var(--text-dim);">HTML supported.</span>
-          </div>
+        <div class="field">
+          <label for="{{ field.name }}" class="{{ 'field-label-required' if field.required }}">{{ field.label }}</label>
+          <input type="hidden" id="{{ field.name }}" name="{{ field.name }}" value="{{ entry.get_value(field.name) if entry else (field.default_value or '') }}">
+          <trix-editor input="{{ field.name }}" placeholder="Write your content here..."></trix-editor>
+        </div>
 
         {% elif field.field_type.value == 'image' %}
           <div class="field">
